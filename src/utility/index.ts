@@ -7,3 +7,10 @@ export const HashPassword=async(password:string)=>{
 
   return pass;
 }
+
+
+export const isPassEqual=async(password:string,hashPassword:string)=>{ 
+    console.log(password,"password"); 
+    console.log(hashPassword,"hashpassword")
+    return await  bcrypt.compare(password , hashPassword)
+}
