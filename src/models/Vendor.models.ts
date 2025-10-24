@@ -29,9 +29,9 @@ const VendorSchema = new Schema(
     phone: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true, select: false },
-    serviceAvailable: { type: Boolean },
+    serviceAvailable: { type: Boolean ,default:true},
     coverImages: { type: [String] },
-    rating: { type: Number },
+    rating: { type: Number,default:0 },
     foods: [
       {
         type: mongoose.SchemaTypes.ObjectId,
