@@ -1,11 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
+import cookieparser from "cookie-parser"
 import { ConnectDb } from "./services/db.js";
-import { AdminRoutes, VendorRoute } from "./routes/index.js";
+import { AdminRoutes, VendorRoute } from "./routes/index.js"; 
+
 
 dotenv.config();
 const app = express();
-app.use(express.json());
+app.use(express.json()); 
+app.use(cookieparser());
 
 await ConnectDb();
 
