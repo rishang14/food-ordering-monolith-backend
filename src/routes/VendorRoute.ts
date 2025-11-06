@@ -3,6 +3,6 @@ import { VendorLogin } from "../controllers/index.js";
 
 const router = express.Router();
 
-router.post("/login", VendorLogin);
+router.post("/login",VendorLogin);
 
 export { router as VendorRoute };

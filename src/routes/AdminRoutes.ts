@@ -4,14 +4,15 @@ import express, {
   type NextFunction,
 } from "express";
 import { CreateVendor, GetallVendors, GetVendorsById } from "../controllers/index.js";
+import { Auth } from "../middleware/Auth.js";
 
 const router = express.Router();  
 
 
 
 router.post("/createvendor",CreateVendor); 
-router.get("/getallvendors",GetallVendors); 
-router.get("/vendor/:id",GetVendorsById);   
+router.get("/getallvendors",Auth,GetallVendors); 
+router.get("/vendor/:id",Auth,GetVendorsById);   
 
 
 

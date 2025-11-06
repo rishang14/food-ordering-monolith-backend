@@ -40,11 +40,9 @@ export const VendorLogin = async (
       email: vendor.email,
       name: vendor.name,
     });
-    console.log(token, "token is generated");
-    const verified = await VerifyToken(
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGZiODc3MmFkYmUyY2YxYmIzZTUzMWYiLCJlbWFpbCI6Im93bmVyQGV4YW1wbGUuY29tIiwibmFtZSI6IlZlbmRvciBOYW1lIiwiaWF0IjoxNzYxMzIwMjAzLCJleHAiOjE3NjE0MDY2MDN9.jrH4r09_U9XzlYfIlo69Ry0dHBazbT4a5_gqym4Y5lY"
-    );
-    console.log(verified, "vefired");
+   
+  console.log(token,"token is generated"); 
+  res.cookie('token', token, { maxAge: 3600000, httpOnly: true, secure: true })
     return res
       .json({ success: true, message: "user signed in successfully" })
       .status(200);

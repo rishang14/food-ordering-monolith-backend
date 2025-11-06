@@ -29,7 +29,7 @@ export const CreateVendor = async (
       phone: data.phone,
       pincode: data.pincode,
     });
-
+     
     return res.status(201).json({
       success: true,
       message: "Vendor created Successfully",
