@@ -24,7 +24,7 @@ export const CreateVendor = async (
       name: data.name,
       ownerName: data.ownername,
       password: hashPass,
-      foodType: data.foodtype,
+      foodType: data.foodType,
       email: data.email,
       phone: data.phone,
       pincode: data.pincode,

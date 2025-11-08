@@ -1,12 +1,13 @@
 import type { Request, Response, NextFunction } from "express";
 import {
+  FoodInput,
   LoginSchema,
   vendorInputs,
   VendorServiceInputs,
 } from "../dto/Vendor.dto.js";
-import { Vendor } from "../models/Vendor.models.js";
+import { Vendor, Foods } from "../models/index.js";
 import { GenrateToken, isPassEqual } from "../utility/index.js";
-import { error } from "console";
+import z, { success } from "zod";
 
 export const vendorLogin = async (
   req: Request,
@@ -95,13 +96,17 @@ export const updateProfile = async (
 
     if (!validate.success) {
       return res
-        .json({ success: false, error: "Invalid Credentials" })
+        .json({
+          success: false,
+          error: "Invalid Credentials",
+          cause: z.treeifyError(validate.error).properties,
+        })
         .status(400);
     }
 
     const user = req.user;
 
-    const vendor = await Vendor.findByIdAndUpdate(
+    const vendorProfile = await Vendor.findByIdAndUpdate(
       user?._id,
       {
         $set: validate.data,
@@ -110,7 +115,11 @@ export const updateProfile = async (
     );
 
     return res
-      .json({ success: true, message: "Vendor Profile is updated" })
+      .json({
+        success: true,
+        message: "Vendor Profile is updated",
+        data: vendorProfile,
+      })
       .status(200);
   } catch (error) {
     console.log("Error in update profile routes of vendor ", error);
@@ -152,3 +161,62 @@ export const updateService = async (
       .status(500);
   }
 };
+
+export const addFoods = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const validate = FoodInput.safeParse(req.body);
+
+    if (!validate.success) {
+      return res
+        .json({
+          success: false,
+          error: "Invalid Inputs",
+          cause: z.treeifyError(validate.error),
+        })
+        .status(400);
+    }
+
+    const { foods } = validate.data;
+
+    //Todo uplaod all the foods img in supabase and then get the string and put all the string in the food and then save it in db
+
+    const user = req.user;
+    const prepareFood = foods.map((food) => ({
+      ...food,
+      vendorId: user?._id,
+    }));
+
+    const newFoods = await Foods.insertMany(prepareFood);
+    return res
+      .json({ success: true, message: "Food is added", data: newFoods })
+      .status(201);
+  } catch (error) {
+    console.log("Error while adding  the Food ", error);
+    return res
+      .json({ success: false, error: "Internal Server Error" })
+      .status(500);
+  }
+};
+
+export const getFoods = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try  { 
+  const user= req.user; 
+  const foods:any=await Vendor.findById(user?._id).populate("foods").lean(); 
+  return res.json({success:true,message:"ALL foods of vender ",data:foods?.foods}).status(200)
+   } catch (error) {
+    console.log("Error while getting all the food ", error);
+    return res
+      .json({ success: false, error: "Internal Server Error" })
+      .status(500);
+  }
+};    
+
+

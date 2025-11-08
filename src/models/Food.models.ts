@@ -4,12 +4,12 @@ interface Foods extends Document {
   vendorId: Types.ObjectId;
   name: string;
   description: string;
-  category: string;
+  category: "Veg" | "Non-Veg";
   foodType: string;
-  readyTime: number;
+  readyTime?: number;
   price: number;
   rating: number;
-  images: [string];
+  images?: [string];
 }
 
 const FoodSchema = new Schema(
@@ -20,7 +20,7 @@ const FoodSchema = new Schema(
     },
     name: { type: String, required: true },
     description: { type: String, required: true },
-    category: { type: String },
+    category: { type: String, enum: ["Veg", "Non-Veg"], required: true },
     foodType: { type: String, required: true },
     readyTime: { type: Number },
     price: { type: Number },

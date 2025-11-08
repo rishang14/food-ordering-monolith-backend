@@ -33,11 +33,11 @@ const VendorSchema = new Schema(
     lat: { type: Number },
     lng: { type: Number },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
 VendorSchema.virtual("foods", {
-  ref: "food",
+  ref: "Food",
   localField: "_id",
   foreignField: "vendorId",
 });
