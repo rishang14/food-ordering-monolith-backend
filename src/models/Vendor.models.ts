@@ -1,5 +1,5 @@
-import { timeStamp } from "console";
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
+import type { Foods } from "./Food.models.js";
 
 interface VendorDoc extends Document {
   name: string;
@@ -10,11 +10,9 @@ interface VendorDoc extends Document {
   phone: string;
   email: string;
   password: string;
-  salt: string;
   serviceAvailable: boolean;
   coverImages: [string];
   rating: number;
-  foods: any;
   lat: number;
   lng: number;
 }
@@ -29,21 +27,21 @@ const VendorSchema = new Schema(
     phone: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true, select: false },
-    serviceAvailable: { type: Boolean ,default:true},
+    serviceAvailable: { type: Boolean, default: true },
     coverImages: { type: [String] },
-    rating: { type: Number,default:0 },
-    foods: [
-      {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "food",
-      },
-    ],
+    rating: { type: Number, default: 0 },
     lat: { type: Number },
     lng: { type: Number },
   },
   { timestamps: true }
 );
 
-const Vendor = mongoose.model<VendorDoc>("vendor", VendorSchema);
+VendorSchema.virtual("foods", {
+  ref: "food",
+  localField: "_id",
+  foreignField: "vendorId",
+});
+
+const Vendor = mongoose.model<VendorDoc>("Vendor", VendorSchema);
 
 export { Vendor };

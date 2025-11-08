@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt"; 
-import { verify } from "crypto";
 import jwt from "jsonwebtoken"
-import { success } from "zod";
+
 
 interface AuthPayload {
   name: string;

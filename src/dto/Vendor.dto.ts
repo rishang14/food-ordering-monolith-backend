@@ -1,4 +1,4 @@
-import z, { email } from "zod";
+import z from "zod";
 
 export const createvendor = z.object({
   name: z.string().min(5, "min 5 char are required "),
@@ -17,4 +17,11 @@ export const createvendor = z.object({
 export const LoginSchema= z.object({
     email:z.email("email is required"),
     password:z.string().min(7,"password must be 7 letter")
+})
+
+export const vendorInputs= createvendor.partial();  
+
+
+export const VendorServiceInputs=z.object({
+  serviceAvailable:z.boolean()
 })
