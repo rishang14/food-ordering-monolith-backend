@@ -1,12 +1,13 @@
 import express   from "express"; 
 import type { NextFunction,Request,Response } from "express"; 
+import { CreateCustomer } from "../controllers/Customer.js";
 
 
 
 const router=express.Router();    
 
 
-// router.post("/signup",)
+router.post("/signup",CreateCustomer)
 
 
 

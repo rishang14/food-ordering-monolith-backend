@@ -37,3 +37,13 @@ export const VerifyToken=async(token:string)=>{
   return {success:false,token:null};
  }
 }
+
+
+export const generateOtpAndExpiry=()=>{  
+  const currtime= new Date(); 
+  const add1hr= new Date(currtime.getTime() + 5 * 60000); 
+
+  const expiry= add1hr.toLocaleTimeString('en-GB', { hour12: false });
+
+   return {otp:Math.floor(100000 + Math.random() * 900000), expiry }
+}
