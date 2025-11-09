@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { ConnectDb } from "./services/db.js";
-import { AdminRoutes, VendorRoute } from "./routes/index.js"; 
+import { AdminRoutes, CustomerRoutes,VendorRoutes } from "./routes/index.js"; 
 import type { Request,Response,NextFunction } from "express";
 
 dotenv.config();
@@ -23,7 +23,8 @@ try {
 
 
 app.use("/admin", AdminRoutes);
-app.use("/vendor", VendorRoute);
+app.use("/vendor", VendorRoutes); 
+app.use("/customer",CustomerRoutes)
 
 app.use("/", (req, res) => {
   res.status(200).send("Server is running");

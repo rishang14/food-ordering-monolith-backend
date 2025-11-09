@@ -21,4 +21,4 @@ router.post("/addfoods", addFoods);
 router.get("/getfoods", getFoods);
 
 
-export { router as VendorRoute };
+export { router as VendorRoutes };
