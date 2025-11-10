@@ -1,17 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
-import { VerifyToken } from "../utility/index.js";
+import { VerifyToken, type userPayload, type VendorPaylaod } from "../utility/index.js";
 4;
 
-interface AuthPayload {
-  _id: string;
-  name: string;
-  email: string;
-}
 
 declare global {
   namespace Express {
     interface Request {
-      user?: AuthPayload;
+      user?: VendorPaylaod | userPayload;
     }
   }
 }
@@ -37,7 +32,7 @@ export const Auth = async (req: Request, res: Response, next: NextFunction) => {
         .status(401);
     }
     if (token) {
-      req.user = token as AuthPayload;
+      req.user = token as VendorPaylaod | userPayload;
     }
 
     next();

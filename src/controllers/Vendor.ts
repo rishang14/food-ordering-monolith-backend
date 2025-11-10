@@ -7,7 +7,7 @@ import {
 } from "../dto/Vendor.dto.js";
 import { Vendor, Foods } from "../models/index.js";
 import { GenrateToken, isPassEqual } from "../utility/index.js";
-import z, { success } from "zod";
+import z from "zod";
 
 export const vendorLogin = async (
   req: Request,

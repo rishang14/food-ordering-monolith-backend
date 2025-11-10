@@ -1,11 +1,14 @@
-import bcrypt from "bcrypt"; 
-import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-
-interface AuthPayload {
+export interface VendorPaylaod {
   name: string;
   email: string;
   _id: string;
+}
+
+export interface userPayload extends VendorPaylaod {
+  isVerified: boolean;
 }
 
 export const HashPassword = async (password: string) => {
@@ -20,30 +23,34 @@ export const isPassEqual = async (password: string, hashPassword: string) => {
   return await bcrypt.compare(password, hashPassword);
 };
 
-export const GenrateToken = async (payload: AuthPayload) => {
-  const token = await jwt.sign(payload,process.env.SECRET!,{
-   expiresIn:"1D"
-  }); 
+export const GenrateToken = async (payload: VendorPaylaod | userPayload) => {
+  const token = await jwt.sign(payload, process.env.SECRET!, {
+    expiresIn: "1D",
+  });
   return token;
-}; 
+};
 
+export const VerifyToken = async (token: string) => {
+  try {
+    const verified = await jwt.verify(token, process.env.SECRET!);
+    console.log(verified);
+    return { success: true, token: verified };
+  } catch (error) {
+    return { success: false, token: null };
+  }
+};
 
-export const VerifyToken=async(token:string)=>{
- try {
-   const verified= await jwt.verify(token,process.env.SECRET!); 
-  console.log(verified) 
-  return {success:true, token:verified}
- } catch (error) {
-  return {success:false,token:null};
- }
-}
+export const generateOtpAndExpiry = () => {
+  const currtime = new Date();
+  
 
+  const expiry = new Date(currtime.getTime() + 30 * 60 * 1000);
 
-export const generateOtpAndExpiry=()=>{  
-  const currtime= new Date(); 
-  const add5min= new Date(currtime.getTime() + 5 * 60000); 
+  return { otp: Math.floor(100000 + Math.random() * 900000), expiry:expiry.toISOString() };
+};
 
-  const expiry= add5min.toLocaleTimeString('en-GB', { hour12: false });
-
-   return {otp:Math.floor(100000 + Math.random() * 900000), expiry }
-}
+export const checkotpExpiry = (expiry:Date) => {
+  const now = new Date();
+  const expiryTime = new Date(expiry);
+  return now < expiryTime;
+};

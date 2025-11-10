@@ -2,15 +2,15 @@ import mongoose, { Schema, Document } from "mongoose";
 import { required } from "zod/mini";
 // import { OrderDoc } from './Order';
 
-interface CustomerDoc extends Document {
+export interface CustomerDoc extends Document {
   email: string;
   password: string;
   name:string,
   address: string;
   phone: string;
   verified: boolean;
-  otp: number;
-  otp_expiry: String;
+  otp: number | undefined;
+  otp_expiry: Date | undefined;
   lat: number;
   lng: number;
   cart: [any];
@@ -26,7 +26,7 @@ const CustomerSchema = new Schema(
     phone: { type: String, required: true },
     verified: { type: Boolean },
     otp: { type: Number },
-    otp_expiry: { type: String, required:true },
+    otp_expiry: { type: Date},
     lat: { type: Number },
     lng: { type: Number },
     cart: [
