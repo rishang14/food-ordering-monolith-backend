@@ -34,16 +34,16 @@ export const CreateCustomer = async (req: Request, res: Response) => {
         .status(409);
     }
 
-    // const user = await Customer.create({
-    //   name: data.name,
-    //   email: data.email,
-    //   address: data.address,
-    //   verified: false,
-    //   phone: data.phone,
-    //   otp: otp,
-    //   otp_expiry: expiry,
-    //   password: haspass,
-    // });
+    const user = await Customer.create({
+      name: data.name,
+      email: data.email,
+      address: data.address,
+      verified: false,
+      phone: data.phone,
+      otp: otp,
+      otp_expiry: expiry,
+      password: haspass,
+    });
     
     // now add this to the queue  
     console.log(otp,"otp"); 
@@ -58,7 +58,7 @@ export const CreateCustomer = async (req: Request, res: Response) => {
       .json({
         success: true,
         message: "User Created Successefully",
-        // data: user,
+        data: user,
       })
       .status(201);
   } catch (error) {

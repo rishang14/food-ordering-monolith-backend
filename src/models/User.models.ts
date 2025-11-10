@@ -10,7 +10,7 @@ interface CustomerDoc extends Document {
   phone: string;
   verified: boolean;
   otp: number;
-  otp_expiry: Date;
+  otp_expiry: String;
   lat: number;
   lng: number;
   cart: [any];
@@ -26,7 +26,7 @@ const CustomerSchema = new Schema(
     phone: { type: String, required: true },
     verified: { type: Boolean },
     otp: { type: Number },
-    otp_expiry: { type: Date },
+    otp_expiry: { type: String, required:true },
     lat: { type: Number },
     lng: { type: Number },
     cart: [
