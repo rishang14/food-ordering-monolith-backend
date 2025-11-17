@@ -130,7 +130,7 @@ export const LoginCustomer = async (req: Request, res: Response) => {
   }
 };
 
-export const otpVerify = async (req: Request, res: Response) => {
+export const OtpVerify = async (req: Request, res: Response) => {
   try {
     const { otp } = req.body;
     if (isNaN(otp) || Number(otp) < 10000) {

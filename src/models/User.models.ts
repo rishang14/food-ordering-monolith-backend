@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { required } from "zod/mini";
 // import { OrderDoc } from './Order';
 
 export interface CustomerDoc extends Document {

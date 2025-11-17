@@ -3,15 +3,27 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { ConnectDb } from "./services/db.js";
 import { AdminRoutes, CustomerRoutes,VendorRoutes } from "./routes/index.js"; 
-import type { Request,Response,NextFunction } from "express";
-
+import type { Request,Response,NextFunction } from "express"; 
+import rateLimit from "express-rate-limit"
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+ 
 
+const limiter = rateLimit({
+	windowMs: 1000 * 30, // 30 sec
+	limit: 100, // Limit each IP to 100 requests per `window` (here, per 30 sec).
+	standardHeaders: 'draft-8', 
+	legacyHeaders: false, 
+	ipv6Subnet: 56,  
+  message:{
+    status:429,
+    error:"Too many request  ,please try again after some time "
+  }
+})
 
 try {
   await ConnectDb();
@@ -21,7 +33,7 @@ try {
   process.exit(1); // Exit if DB fails
 }
 
-
+app.use(limiter);
 app.use("/admin", AdminRoutes);
 app.use("/vendor", VendorRoutes); 
 app.use("/customer",CustomerRoutes);
