@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-interface Foods extends Document {
+export interface FoodsType extends Document {
   vendorId: Types.ObjectId;
   name: string;
   description: string;
@@ -32,6 +32,6 @@ const FoodSchema = new Schema(
   }
 );
 
-const Foods = mongoose.model<Foods>("Food", FoodSchema);
+const Foods = mongoose.model<FoodsType>("Food", FoodSchema);
 
 export { Foods };

@@ -2,6 +2,7 @@ import express   from "express";
 import type { NextFunction,Request,Response } from "express"; 
 import { CreateCustomer, LoginCustomer, OtpVerify } from "../controllers/Customer.js"; 
 import rateLimit from "express-rate-limit"; 
+import { Auth } from "../middleware/Auth.ts";
 
 export const OtpLimiter = rateLimit({
   windowMs: 30* 1000,
@@ -14,8 +15,10 @@ const router=express.Router();
 
 
 router.post("/signup",CreateCustomer)
-router.post("/signin",LoginCustomer) 
-router.post("/verify-otp",OtpLimiter,OtpVerify)
+router.post("/signin",LoginCustomer)   
+router.use(Auth);
+router.post("/verify-otp",OtpLimiter,OtpVerify); 
+
 
 
 router.get("/",(req:Request,res:Response,next:NextFunction)=>{

@@ -49,7 +49,7 @@ export const vendorLogin = async (
 
     console.log(token, "token is generated");
     res.cookie("token", token, {
-      maxAge: 3600000,
+      maxAge: 60*60*1000,
       httpOnly: true,
       secure: true,
     });

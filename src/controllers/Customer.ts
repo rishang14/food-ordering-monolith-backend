@@ -1,6 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
-import { CreateCustomerSchema } from "../dto/Customer.dto.js";
-import z  from "zod";
+import {
+  addtoCartSchema,
+  CreateCustomerSchema,
+  editCustomerInputs,
+} from "../dto/Customer.dto.js";
+import z, { success } from "zod";
 import { Customer } from "../models/User.models.js";
 import {
   checkotpExpiry,
@@ -12,6 +16,9 @@ import {
 import { addjob } from "../queue/email.producer.js";
 import { LoginSchema } from "../dto/Vendor.dto.ts";
 import { fa } from "zod/locales";
+import { Console, error } from "console";
+import { set } from "mongoose";
+import { Foods } from "../models/Food.models.ts";
 
 export const CreateCustomer = async (req: Request, res: Response) => {
   try {
@@ -138,7 +145,7 @@ export const OtpVerify = async (req: Request, res: Response) => {
         success: false,
         error: "Invalid Input",
         cause: "NAN  or Invalid otp format",
-      });
+      }).status;
     }
 
     const user = req.user;
@@ -187,6 +194,125 @@ export const OtpVerify = async (req: Request, res: Response) => {
       .status(401);
   } catch (error) {
     console.log("error while verifying otp", error);
+    return res
+      .json({ success: false, error: "Internal Server Error" })
+      .status(500);
+  }
+};
+
+export const GetCustomerProfile = async (req: Request, res: Response) => {
+  try {
+    const cookieUser = req.user;
+    if (cookieUser?._id) {
+      const userData = await Customer.findById({ _id: cookieUser?._id }).lean();
+      return res
+        .json({ success: true, message: "User Detailed Here", data: userData })
+        .status(200);
+    }
+    return res.json({ success: false, error: "Nothing Found" }).status(404);
+  } catch (error) {
+    console.log("Error while sending the data", error);
+    return res
+      .json({ success: false, error: "Internal Server Error" })
+      .status(500);
+  }
+};
+
+export const updateCustomerProfile = async (req: Request, res: Response) => {
+  try {
+    const validate = editCustomerInputs.safeParse(req.body);
+
+    if (!validate.success) {
+      return res
+        .json({
+          success: false,
+          error: "Invalid Inputs",
+          cause: z.treeifyError(validate.error),
+        })
+        .status(400);
+    }
+    const user = req.user;
+
+    const updatedUser = await Customer.findByIdAndUpdate(
+      user?._id,
+      { set: validate.data },
+      { new: true }
+    );
+
+    return res
+      .json({ success: true, message: "User Updated Successfully" })
+      .status(200);
+  } catch (error) {
+    console.log("Error while updating the user", error);
+    return res
+      .json({ success: false, error: "Internal Server Error" })
+      .status(500);
+  }
+};
+
+export const addFoodItemTocart = async (req: Request, res: Response) => {
+  try {
+    const validate = addtoCartSchema.safeParse(req.body);
+    if (!validate.success) {
+      return res
+        .json({
+          success: false,
+          error: "Invalid Inputs",
+          cause: z.treeifyError(validate.error),
+        })
+        .status(400);
+    }
+    const user = req.user;
+
+    // what i have to do is that i have to add the food details with the price of the food detials in the cart section of the user
+    const { foodID, unit } = validate.data;
+
+    const foodsExist = await Foods.findById({ _id: foodID });
+
+    if (!foodsExist) {
+      return res
+        .json({ success: false, error: "Food id doesn't exist" })
+        .status(404);
+    }
+
+    const exists = await Customer.findOne({
+      _id: user?._id,
+      "cart.food": foodsExist._id,
+    });
+    let updatedCart;
+    if (!exists) {
+      updatedCart = await Customer.updateOne(
+        { _id: user?._id, "cart.food": foodsExist._id },
+        { $inc: { "cart.$.unit": unit } }
+      );
+
+      return res.json({
+        success: true,
+        message: "Quantity updated",
+        data: updatedCart,
+      });
+    }
+    updatedCart = await Customer.updateOne(
+      { _id: user?._id },
+      {
+        $push: {
+          cart: {
+            food: foodsExist._id,
+            unit: unit,
+          },
+        },
+      }
+    );
+
+    return res
+      .json({
+        success: true,
+        mesage: "Item aded to the Cart Succsessfully",
+        data: updatedCart,
+      })
+      .status(200);
+  } catch (error) {
+    console.log("Error while adding the item to the cart ", error);
     return res
       .json({ success: false, error: "Internal Server Error" })
       .status(500);

@@ -1,5 +1,10 @@
-import mongoose, { Schema, Document } from "mongoose";
-// import { OrderDoc } from './Order';
+import mongoose, { Schema, Document, Types } from "mongoose";
+// import { OrderDoc } from './Order';   
+
+export interface CustomerCartItem {
+  food: Types.ObjectId;
+  unit: number;
+}
 
 export interface CustomerDoc extends Document {
   email: string;
@@ -12,7 +17,7 @@ export interface CustomerDoc extends Document {
   otp_expiry: Date | undefined;
   lat: number;
   lng: number;
-  cart: [any];
+  cart: CustomerCartItem[];
   orders: [any];
 }
 
