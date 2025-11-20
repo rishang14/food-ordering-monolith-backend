@@ -17,7 +17,7 @@ import { addjob } from "../queue/email.producer.js";
 import { LoginSchema } from "../dto/Vendor.dto.ts";
 import { fa } from "zod/locales";
 import { Console, error } from "console";
-import { set } from "mongoose";
+import mongoose, { set } from "mongoose";
 import { Foods } from "../models/Food.models.ts";
 
 export const CreateCustomer = async (req: Request, res: Response) => {
@@ -250,7 +250,10 @@ export const updateCustomerProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const addFoodItemTocart = async (req: Request, res: Response) => {
+export const addFoodItemTocart = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const validate = addtoCartSchema.safeParse(req.body);
     if (!validate.success) {
@@ -274,7 +277,6 @@ export const addFoodItemTocart = async (req: Request, res: Response) => {
         .json({ success: false, error: "Food id doesn't exist" })
         .status(404);
     }
-
     const exists = await Customer.findOne({
       _id: user?._id,
       "cart.food": foodsExist._id,
@@ -303,7 +305,6 @@ export const addFoodItemTocart = async (req: Request, res: Response) => {
         },
       }
     );
-
     return res
       .json({
         success: true,
@@ -316,5 +317,23 @@ export const addFoodItemTocart = async (req: Request, res: Response) => {
     return res
       .json({ success: false, error: "Internal Server Error" })
       .status(500);
+  }
+};
+
+export const removeFromTheCart = async (req: Request, res: Response) => {
+  try {
+    const { foodId } = req.params;
+
+    if (Number(foodId) < 10000) {
+      return res.json({ success: false, error: "Invalid Id" }).status(400);
+    }
+    if (!mongoose.Types.ObjectId.isValid(foodId as string)) {
+      return res.status(400).json({ success: false, error: "Invalid foodId" });
+    }   
+  
+
+  }catch(error){
+    console.log("error while updating the cart",error);  
+    return res.json({success:false,error:"Internal Server Error"}).status(500);
   }
 };
