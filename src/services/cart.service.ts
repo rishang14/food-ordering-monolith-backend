@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { Customer } from "../models/User.models.ts";
-import { Foods, type FoodsType } from "../models/Food.models.ts";
+import { Foods} from "../models/Food.models.ts";
 
 export interface AddToCartDTO {
   userId: string;

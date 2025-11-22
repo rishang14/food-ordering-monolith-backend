@@ -3,8 +3,8 @@ import express, {
   type Response,
   type NextFunction,
 } from "express";
-import { CreateVendor, GetallVendors, GetVendorsById } from "../controllers/index.js";
-import { Auth } from "../middleware/Auth.js";
+import { CreateVendor, GetallVendors, GetVendorsById } from "../controllers/index.ts";
+import { Auth } from "../middleware/Auth.ts";
 
 const router = express.Router();  
 
