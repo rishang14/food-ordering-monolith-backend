@@ -5,17 +5,18 @@ import {
   Order,
   type OrderDoc,
   type FoodsType,
+  Customer,
 } from "../models/index.ts";
 import { Customercart } from "./Cart.service.ts";
 
 export interface foodItems {
-  food: string,
-  unit: number,
+  food: string;
+  unit: number;
 }
 
 export interface foodwithQuantity {
-  food: FoodsType,
-  unit: number,
+  food: FoodsType;
+  unit: number;
 }
 export class CustomerOrder extends Customercart {
   private static async calcFoodPrice(
@@ -46,7 +47,7 @@ export class CustomerOrder extends Customercart {
     return vendor?.foods;
   }
 
-  static async generateOrder(order:CreateOrderInput): Promise<OrderDoc> {
+  static async generateOrder(order: CreateOrderInput): Promise<OrderDoc> {
     const food = await this.vendorExistWithFoods(order.vendorId);
     const price = await this.calcFoodPrice(order.items, food);
     const expiry = new Date(new Date().getTime() + 60 * 1000); // 1 min later
@@ -60,6 +61,20 @@ export class CustomerOrder extends Customercart {
     });
     if (!createdOrder)
       throw new Error("Something went wrong while Creating the order");
+
+    await Customer.findOneAndUpdate(
+      {
+        _id: order.userId,
+      },
+      { $push: { orders: createdOrder._id } }
+    );
+
+    await Vendor.findOneAndUpdate(
+      {
+        _id: order.vendorId,
+      },
+      { $push: { orders: createdOrder._id } }
+    );
     return createdOrder;
   }
 

@@ -5,9 +5,12 @@ import { ConnectDb } from "./services/db.js";
 import { AdminRoutes, CustomerRoutes,VendorRoutes } from "./routes/index.js"; 
 import type { Request,Response,NextFunction } from "express"; 
 import rateLimit from "express-rate-limit"
+import http from "http";   
+import { RealTime } from "./services/Ws.main.ts";
+
 dotenv.config();
 
-const app = express();
+export const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
@@ -41,6 +44,19 @@ app.use("/customer",CustomerRoutes);
 app.use("/", (req, res) => {
   res.status(200).send("Server is running");
 });
+  
+
+
+
+const server=http.createServer(app); 
+
+
+export const ws=new RealTime(server)   
+
+server.listen(8001, () => {
+  console.log("Server running on port 8000");
+});
+
 
 
 app.use((err:any, req:Request, res:Response, next:NextFunction) => {

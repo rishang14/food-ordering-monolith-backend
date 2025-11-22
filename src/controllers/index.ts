@@ -1,2 +1,3 @@
-export * from "./Admin.js" 
-export * from "./Vendor.js"
+export * from "./Admin.ts" 
+export * from "./Vendor.ts" 
+export * from "./Customer.ts"
