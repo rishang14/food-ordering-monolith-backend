@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { Customer } from "../models/Customer.models.ts";
-import { Foods} from "../models/Food.models.ts";
+import { Foods, type FoodsType} from "../models/Food.models.ts";
 
 export interface AddToCartDTO {
   userId: string;
@@ -24,22 +24,23 @@ export interface ClearCartDTO {
 }
 
 export class Customercart {
-  private static validID(id: string) {
+   static validId(id: string) {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throw new Error("Invalid Id");
     }
   }
 
-  private static async foodExist(foodId: string) {
-    this.validID(foodId);
+   static async foodExist(foodId: string):Promise<FoodsType> {
+    this.validId(foodId);
     const foods = await Foods.findById(foodId);
     if (!foods) {
       throw new Error("Food with this Id is wrong");
-    }
+    }  
+    return foods;
   }
 
   private static async populateFoodsInUser(userId: string) {
-    this.validID(userId);
+    this.validId(userId);
     const user = await Customer.findById(userId).populate("cart.food");
     if (!user) throw new Error("User not found");
     return user;
@@ -109,7 +110,7 @@ export class Customercart {
   static async removeFromCart({ userId, foodId }: RemoveCartDTO) {
     await this.foodExist(foodId);
 
-    this.validID(userId);
+    this.validId(userId);
 
     const foodIsInUserCart = await Customer.findOne({
       _id: userId,
@@ -131,7 +132,7 @@ export class Customercart {
   }
 
   static async clearCart({ userId }: ClearCartDTO) {
-    this.validID(userId);
+    this.validId(userId);
 
     await Customer.updateOne(
       {

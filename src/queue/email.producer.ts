@@ -15,7 +15,7 @@ const sendOtpEmailQueue = new Queue("sendOtpEmailQueue", {
 });
 
 export async function addjob(job: job) { 
-  // so what it happening is i designed my queue in such a way it will retry 3 time with delay of  5sec and retry 3 time
+  // so  queue is initialize  in  a way  that it will retry 3 time with delay of  5sec and retry 3 time
   await sendOtpEmailQueue.add(job.type, job.param,{removeOnComplete:true,removeOnFail:false, attempts:3, backoff:{
     type:"exponential",
     delay:5000

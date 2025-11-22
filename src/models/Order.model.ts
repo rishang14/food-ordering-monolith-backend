@@ -2,7 +2,6 @@ import mongoose, { Schema, Document } from "mongoose";
 import type { FoodsType } from "./Food.models.ts";
 
 export interface OrderDoc extends Document {
-  orderId: string;
   userId: string;
   vendorId: string;
   items: FoodsType[];
@@ -32,7 +31,6 @@ export interface OrderDoc extends Document {
 
 const OrderSchema = new Schema(
   {
-    orderId: { type: String, require: true },
     userId: { type: String, required: true },
     vendorId: { type: String, require: true },
     items: [
@@ -42,7 +40,7 @@ const OrderSchema = new Schema(
       },
     ],
     totalAmount: { type: Number, require: true },
-    paidAmount: { type: Number, require: true },
+    paidAmount: { type: Number, },
     orderDate: { type: Date },
     orderStatus: {
       type: String,
