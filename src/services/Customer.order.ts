@@ -1,3 +1,4 @@
+import type { any } from "zod";
 import type { CreateOrderInput } from "../dto/Order.dto.ts";
 import {
   Vendor,
@@ -6,6 +7,7 @@ import {
   type OrderDoc,
   type FoodsType,
   Customer,
+  Foods,
 } from "../models/index.ts";
 import { Customercart } from "./Cart.service.ts";
 
@@ -18,64 +20,76 @@ export interface foodwithQuantity {
   food: FoodsType;
   unit: number;
 }
+
 export class CustomerOrder extends Customercart {
   private static async calcFoodPrice(
-    data: foodItems[],
-    foods: FoodsType[]
+    foods: FoodsType[],
+    items: foodItems[]
   ): Promise<number> {
-    // got the foods compare with the fooditem array is anyid is wrong or doesn't match with the vendor food return and throw error
-    // that provided food id is wrong
+    // unit should be greator than zero and should be there
+    for (const i of items) {
+      if (!i.unit || i.unit < 0) {
+        throw new Error("Unit Should be greater than 0");
+      }
+    }
+
+    // all the food will be from the same vendor
+    const vendorId = foods[0]?.vendorId.toString();
+    for (const food of foods) {
+      if (food.vendorId.toString() !== vendorId) {
+        throw new Error("All items must be from the same vendor");
+      }
+    }
+    // generate the price
     let totalPrice = 0;
-    const food: foodwithQuantity[] = [];
-    for (const item of data) {
-      this.validId(item.food);
-      const getFood = await this.foodExist(item.food);
-      food.push({ food: getFood, unit: item.unit });
+    for (const i of items) {
+      const db = foods.find((f: any) => f._id.toString() == i.food);
+      totalPrice += (db?.price as number) * i.unit;
     }
-    for (const f of food) {
-      totalPrice += f.food.price * f.unit;
-    }
+
     return totalPrice;
   }
 
-  private static async vendorExistWithFoods(id: string) {
-    this.validId(id);
-    const vendor: any = await Vendor.findById(id).populate("foods");
-    if (!vendor) {
-      throw new Error("No vendor Exist");
+  private static async getAndCheckFoodValid(
+    item: foodItems[]
+  ): Promise<FoodsType[]> {
+    const foodIds = item.map((i) => i.food);
+    const foods: FoodsType[] = await Foods.find({ _id: { $in: foodIds } });
+    if (foods.length !== foodIds.length) {
+      throw new Error("Some Food ids are wrong");
     }
-    return vendor?.foods;
+    return foods;
   }
 
-  static async generateOrder(order: CreateOrderInput): Promise<OrderDoc> {
-    const food = await this.vendorExistWithFoods(order.vendorId);
-    const price = await this.calcFoodPrice(order.items, food);
+  static async generateOrder(order: CreateOrderInput) {
+    const food = await this.getAndCheckFoodValid(order.items);
+    const price = await this.calcFoodPrice(food, order.items);
     const expiry = new Date(new Date().getTime() + 60 * 1000); // 1 min later
-    const createdOrder = await Order.create({
-      userId: order.userId,
-      vendorId: order.vendorId,
-      totalAmount: price,
-      orderStatus: "Created",
-      items: order.items,
-      expiresAT: expiry,
-    });
-    if (!createdOrder)
-      throw new Error("Something went wrong while Creating the order");
+    // const createdOrder = await Order.create({
+    //   userId: order.userId,
+    //   vendorId:,
+    //   totalAmount: price,
+    //   orderStatus: "Created",
+    //   items: order.items,
+    //   expiresAT: expiry,
+    // });
+    // if (!createdOrder)
+    //   throw new Error("Something went wrong while Creating the order");
 
-    await Customer.findOneAndUpdate(
-      {
-        _id: order.userId,
-      },
-      { $push: { orders: createdOrder._id } }
-    );
+    // await Customer.findOneAndUpdate(
+    //   {
+    //     _id: order.userId,
+    //   },
+    //   { $push: { orders: createdOrder._id } }
+    // );
 
-    await Vendor.findOneAndUpdate(
-      {
-        _id: order.vendorId,
-      },
-      { $push: { orders: createdOrder._id } }
-    );
-    return createdOrder;
+    // await Vendor.findOneAndUpdate(
+    //   {
+    //     _id: order.vendorId,
+    //   },
+    //   { $push: { orders: createdOrder._id } }
+    // );
+    // return createdOrder;
   }
 
   static async cancelOrder(orderId: string): Promise<OrderDoc> {

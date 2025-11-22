@@ -4,7 +4,7 @@ import {
   CreateCustomerSchema,
   editCustomerInputs,
 } from "../dto/Customer.dto.js";
-import z, { success } from "zod";
+import z from "zod";
 import { Customer } from "../models/index.ts";
 import {
   checkotpExpiry,
@@ -16,14 +16,12 @@ import {
 import { addjob } from "../queue/email.producer.ts";
 import { Customercart } from "../services/Cart.service.ts";
 import {
-  CreateOrderItemSchema,
   CreateOrderSchema,
   LoginSchema,
 } from "../dto/index.ts";
-import { error } from "console";
 import { CustomerOrder } from "../services/Customer.order.ts";
 
-export const CreateCustomer = async (req: Request, res: Response) => {
+export const createCustomer = async (req: Request, res: Response) => {
   try {
     const validate = CreateCustomerSchema.safeParse(req.body);
 
@@ -87,7 +85,7 @@ export const CreateCustomer = async (req: Request, res: Response) => {
   }
 };
 
-export const LoginCustomer = async (req: Request, res: Response) => {
+export const loginCustomer = async (req: Request, res: Response) => {
   try {
     const validate = LoginSchema.safeParse(req.body);
 
@@ -142,7 +140,7 @@ export const LoginCustomer = async (req: Request, res: Response) => {
   }
 };
 
-export const OtpVerify = async (req: Request, res: Response) => {
+export const otpVerify = async (req: Request, res: Response) => {
   try {
     const { otp } = req.body;
     if (isNaN(otp) || Number(otp) < 10000) {
@@ -206,7 +204,7 @@ export const OtpVerify = async (req: Request, res: Response) => {
   }
 };
 
-export const GetCustomerProfile = async (req: Request, res: Response) => {
+export const getCustomerProfile = async (req: Request, res: Response) => {
   try {
     const cookieUser = req.user;
     if (cookieUser?._id) {

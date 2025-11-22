@@ -7,8 +7,6 @@ export const CreateOrderItemSchema = z.object({
 
 export const CreateOrderSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  vendorId: z.string().min(1, "Vendor ID is required"),
-
   items: z
     .array(CreateOrderItemSchema)
     .min(1, "At least one item is required"),
