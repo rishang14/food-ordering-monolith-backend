@@ -1,10 +1,10 @@
-import type { NextFunction, Request, Response } from "express";
+import type {  Request, Response } from "express";
 import {
   addtoCartSchema,
   CreateCustomerSchema,
   editCustomerInputs,
 } from "../dto/Customer.dto.js";
-import z, { success } from "zod";
+import z from "zod";
 import { Customer } from "../models/User.models.js";
 import {
   checkotpExpiry,
@@ -15,10 +15,7 @@ import {
 } from "../utility/index.js";
 import { addjob } from "../queue/email.producer.js";
 import { LoginSchema } from "../dto/Vendor.dto.ts";
-import { fa } from "zod/locales";
-import { Console, error } from "console";
-import mongoose, { set } from "mongoose";
-import { Foods } from "../models/Food.models.ts";
+import { Customercart } from "../services/Cart.service.ts";
 
 export const CreateCustomer = async (req: Request, res: Response) => {
   try {
@@ -250,10 +247,7 @@ export const updateCustomerProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const addFoodItemTocart = async (
-  req: Request,
-  res: Response
-) => {
+export const addFoodItemTocart = async (req: Request, res: Response) => {
   try {
     const validate = addtoCartSchema.safeParse(req.body);
     if (!validate.success) {
@@ -267,55 +261,29 @@ export const addFoodItemTocart = async (
     }
     const user = req.user;
 
-    // what i have to do is that i have to add the food details with the price of the food detials in the cart section of the user
-    const { foodID, unit } = validate.data;
+    const { foodId, unit } = validate.data;
 
-    const foodsExist = await Foods.findById({ _id: foodID });
-
-    if (!foodsExist) {
-      return res
-        .json({ success: false, error: "Food id doesn't exist" })
-        .status(404);
-    }
-    const exists = await Customer.findOne({
-      _id: user?._id,
-      "cart.food": foodsExist._id,
+    const cart = await Customercart.addtocart({
+      userId: user?._id as string,
+      foodId,
+      unit,
     });
-    let updatedCart;
-    if (!exists) {
-      updatedCart = await Customer.updateOne(
-        { _id: user?._id, "cart.food": foodsExist._id },
-        { $inc: { "cart.$.unit": unit } }
-      );
 
-      return res.json({
-        success: true,
-        message: "Quantity updated",
-        data: updatedCart,
-      });
-    }
-    updatedCart = await Customer.updateOne(
-      { _id: user?._id },
-      {
-        $push: {
-          cart: {
-            food: foodsExist._id,
-            unit: unit,
-          },
-        },
-      }
-    );
     return res
       .json({
         success: true,
-        mesage: "Item aded to the Cart Succsessfully",
-        data: updatedCart,
+        message: "Added to cart successfully",
+        data: cart,
       })
       .status(200);
-  } catch (error) {
-    console.log("Error while adding the item to the cart ", error);
+  } catch (error: any) {
+    console.log("Error while addig item to the cart", error);
+
     return res
-      .json({ success: false, error: "Internal Server Error" })
+      .json({
+        success: false,
+        error: error.message || "Internal Server Error",
+      })
       .status(500);
   }
 };
@@ -324,16 +292,43 @@ export const removeFromTheCart = async (req: Request, res: Response) => {
   try {
     const { foodId } = req.params;
 
-    if (Number(foodId) < 10000) {
-      return res.json({ success: false, error: "Invalid Id" }).status(400);
+    if (!foodId) {
+      return res.json({ success: false, error: "Invalid request" }).status(400);
     }
-    if (!mongoose.Types.ObjectId.isValid(foodId as string)) {
-      return res.status(400).json({ success: false, error: "Invalid foodId" });
-    }   
-  
+    const user = req.user;
 
-  }catch(error){
-    console.log("error while updating the cart",error);  
-    return res.json({success:false,error:"Internal Server Error"}).status(500);
+    const carItem = await Customercart.removeFromCart({
+      userId: user?._id as string,
+      foodId,
+    });
+
+    return res.json({
+      success: true,
+      message: "Item removed successfully",
+      data: carItem,
+    });
+  } catch (error: any) {
+    console.log("error while updating the cart", error);
+    return res
+      .json({ success: false, error: error.message || "Internal Server Error" })
+      .status(500);
+  }
+};
+
+export const emptyCart = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+
+    const cart = await Customercart.clearCart({ userId: user?._id as string });
+
+    return res
+      .json({ success: true, message: "Cart is empty now" })
+      .status(200);
+  } catch (error: any) {
+    console.log("Error while claering the cart");
+
+    return res
+      .json({ success: false, error: error.message || "Intenal Server Error" })
+      .status(500);
   }
 };

@@ -14,6 +14,6 @@ export const editCustomerInputs=CreateCustomerSchema.partial();
 
 
 export const addtoCartSchema=z.object({
-    foodID:z.string().min(10,"id format is wrong"), 
+    foodId:z.string().min(10,"id format is wrong"), 
     unit:z.number() 
 })
