@@ -105,7 +105,7 @@ export const updateProfile = async (
     }
 
     const user = req.user;
-
+   //todo  remove password from here password can't be updated from here
     const vendorProfile = await Vendor.findByIdAndUpdate(
       user?._id,
       {
@@ -209,7 +209,8 @@ export const getFoods = async (
 ) => {
   try  { 
   const user= req.user; 
-  const foods:any=await Vendor.findById(user?._id).populate("foods").lean(); 
+  const foods:any=await Vendor.findById(user?._id).populate("foods").lean();  
+  console.log("foods",foods)
   return res.json({success:true,message:"ALL foods of vender ",data:foods?.foods}).status(200)
    } catch (error) {
     console.log("Error while getting all the food ", error);

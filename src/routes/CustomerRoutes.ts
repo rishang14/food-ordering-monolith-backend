@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 import {
   addFoodItemTocart,
   CreateCustomer,
-  emptyCart,
+  emptyUserCart,
   GetCustomerProfile,
   LoginCustomer,
   OtpVerify,
@@ -29,7 +29,7 @@ router.get("/profile",GetCustomerProfile);
 router.patch("/updateprofile",updateCustomerProfile); 
 router.post("/addtocart", addFoodItemTocart);
 router.patch("/remvoeitemfromcart:foodId", removeFromTheCart);
-router.delete("/emptycart", emptyCart);
+router.delete("/emptycart", emptyUserCart);
 
 router.get("/", (req: Request, res: Response, next: NextFunction) => {
   try {

@@ -49,13 +49,11 @@ app.use("/", (req, res) => {
 
 
 const server=http.createServer(app); 
-
-
 export const ws=new RealTime(server)   
-
 server.listen(8001, () => {
-  console.log("Server running on port 8000");
-});
+  console.log("Server running on port 8001");
+}); 
+
 
 
 

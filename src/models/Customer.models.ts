@@ -29,8 +29,8 @@ const CustomerSchema = new Schema(
     address: { type: String },
     phone: { type: String, required: true },
     verified: { type: Boolean },
-    otp: { type: Number },
-    otp_expiry: { type: Date},
+    otp: { type: Number ,select:false},
+    otp_expiry: { type: Date, select:false},
     lat: { type: Number },
     lng: { type: Number },
     cart: [

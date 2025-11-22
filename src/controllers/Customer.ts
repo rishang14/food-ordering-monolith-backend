@@ -103,10 +103,12 @@ export const LoginCustomer = async (req: Request, res: Response) => {
 
     const { data } = validate;
 
-    const user = await Customer.findOne({ email: data.email });
+    const user = await Customer.findOne({ email: data.email }).select(
+      "+password -otp -otp_expiry"
+    );
 
     if (user) {
-      const checkpass = isPassEqual(data.password, user.password);
+      const checkpass = await isPassEqual(data.password, user.password);
 
       if (!checkpass) {
         return res
@@ -153,8 +155,9 @@ export const OtpVerify = async (req: Request, res: Response) => {
 
     const user = req.user;
 
-    const customer = await Customer.findById({ _id: user?._id });
-
+    const customer = await Customer.findById({ _id: user?._id }).select(
+      "+otp  +otp_expiry"
+    );
     if (customer) {
       const otpInTime = checkotpExpiry(customer.otp_expiry as Date);
 
@@ -235,15 +238,17 @@ export const updateCustomerProfile = async (req: Request, res: Response) => {
         .status(400);
     }
     const user = req.user;
+ 
 
+    //todo  remove password from here password can't be updated from here
     const updatedUser = await Customer.findByIdAndUpdate(
       user?._id,
-      { set: validate.data },
+      { $set: validate.data },
       { new: true }
     );
-
+    console.log("updated user",updatedUser)
     return res
-      .json({ success: true, message: "User Updated Successfully" })
+      .json({ success: true, message: "User Updated Successfully",data:updatedUser })
       .status(200);
   } catch (error) {
     console.log("Error while updating the user", error);
@@ -321,14 +326,13 @@ export const removeFromTheCart = async (req: Request, res: Response) => {
   }
 };
 
-export const emptyCart = async (req: Request, res: Response) => {
+export const emptyUserCart = async (req: Request, res: Response) => {
   try {
     const user = req.user;
 
+    console.log("i am trigerred")
     const cart = await Customercart.clearCart({ userId: user?._id as string });
-
-    return res
-      .json({ success: true, message: "Cart is empty now" })
+    return res.json({ success: true, message: "Cart is empty now" })
       .status(200);
   } catch (error: any) {
     console.log("Error while claering the cart");
