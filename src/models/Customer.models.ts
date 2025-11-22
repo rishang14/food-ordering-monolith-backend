@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-// import { OrderDoc } from './Order';   
+import type { OrderDoc } from "./index.ts";   
 
 export interface CustomerCartItem {
   food: Types.ObjectId;
@@ -18,7 +18,7 @@ export interface CustomerDoc extends Document {
   lat: number;
   lng: number;
   cart: CustomerCartItem[];
-  orders: [any];
+  orders: Types.ObjectId[];
 }
 
 const CustomerSchema = new Schema(
@@ -39,7 +39,9 @@ const CustomerSchema = new Schema(
         unit: { type: Number, require: true },
       },
     ],
-    orders: [],
+     orders: [
+      { type: Schema.Types.ObjectId, ref: "order" }
+    ],
   },
   {
     timestamps: true,

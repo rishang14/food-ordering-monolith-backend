@@ -4,9 +4,11 @@ import {
   addFoodItemTocart,
   CreateCustomer,
   emptyCart,
+  GetCustomerProfile,
   LoginCustomer,
   OtpVerify,
   removeFromTheCart,
+  updateCustomerProfile,
 } from "../controllers/Customer.js";
 import rateLimit from "express-rate-limit";
 import { Auth } from "../middleware/Auth.ts";
@@ -22,7 +24,9 @@ const router = express.Router();
 router.post("/signup", CreateCustomer);
 router.post("/signin", LoginCustomer);
 router.use(Auth);
-router.post("/verify-otp", OtpLimiter, OtpVerify);
+router.post("/verify-otp", OtpLimiter, OtpVerify); 
+router.get("/profile",GetCustomerProfile); 
+router.patch("/updateprofile",updateCustomerProfile); 
 router.post("/addtocart", addFoodItemTocart);
 router.patch("/remvoeitemfromcart:foodId", removeFromTheCart);
 router.delete("/emptycart", emptyCart);

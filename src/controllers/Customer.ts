@@ -5,7 +5,7 @@ import {
   editCustomerInputs,
 } from "../dto/Customer.dto.js";
 import z from "zod";
-import { Customer } from "../models/User.models.js";
+import { Customer } from "../models/Customer.models.ts";
 import {
   checkotpExpiry,
   generateOtpAndExpiry,

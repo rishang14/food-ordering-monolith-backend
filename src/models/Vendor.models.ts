@@ -1,17 +1,17 @@
-import mongoose, { Schema, Document } from "mongoose";
-import type { Foods } from "./Food.models.js";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 interface VendorDoc extends Document {
   name: string;
   ownerName: string;
-  foodType: [string];
+  foodType: string[];
   pincode: string;
   address: string;
   phone: string;
   email: string;
   password: string;
-  serviceAvailable: boolean;
-  coverImages: [string];
+  serviceAvailable: boolean; 
+  orders:Types.ObjectId[]
+  coverImages: string[];
   rating: number;
   lat: number;
   lng: number;
@@ -25,7 +25,8 @@ const VendorSchema = new Schema(
     pincode: { type: String, required: true },
     address: { type: String },
     phone: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true }, 
+    orders: [{ type: Schema.Types.ObjectId, ref: "order" }],
     password: { type: String, required: true, select: false },
     serviceAvailable: { type: Boolean, default: true },
     coverImages: { type: [String] },
@@ -37,7 +38,7 @@ const VendorSchema = new Schema(
 );
 
 VendorSchema.virtual("foods", {
-  ref: "Food",
+  ref: "food",
   localField: "_id",
   foreignField: "vendorId",
 });
