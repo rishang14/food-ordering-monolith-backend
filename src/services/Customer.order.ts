@@ -1,22 +1,21 @@
-import type { FoodsType } from "../models/Food.models.ts";
-import { Order, type OrderDoc } from "../models/Order.model.ts";
-import { Vendor, type VendorDoc } from "../models/Vendor.models.ts";
+import type { CreateOrderInput } from "../dto/Order.dto.ts";
+import {
+  Vendor,
+  type VendorDoc,
+  Order,
+  type OrderDoc,
+  type FoodsType,
+} from "../models/index.ts";
 import { Customercart } from "./Cart.service.ts";
 
 export interface foodItems {
-  _id: string;
-  unit: number;
-}
-
-export interface orderDetails {
-  foods: foodItems[];
-  restaurantId: string;
-  userId: string;
+  food: string,
+  unit: number,
 }
 
 export interface foodwithQuantity {
-  food: FoodsType;
-  unit: number;
+  food: FoodsType,
+  unit: number,
 }
 export class CustomerOrder extends Customercart {
   private static async calcFoodPrice(
@@ -28,8 +27,8 @@ export class CustomerOrder extends Customercart {
     let totalPrice = 0;
     const food: foodwithQuantity[] = [];
     for (const item of data) {
-      this.validId(item._id);
-      const getFood = await this.foodExist(item._id);
+      this.validId(item.food);
+      const getFood = await this.foodExist(item.food);
       food.push({ food: getFood, unit: item.unit });
     }
     for (const f of food) {
@@ -47,16 +46,16 @@ export class CustomerOrder extends Customercart {
     return vendor?.foods;
   }
 
-  static async generateOrder(order: orderDetails): Promise<OrderDoc> {
-    const food = await this.vendorExistWithFoods(order.restaurantId);
-    const price = await this.calcFoodPrice(order.foods, food);
+  static async generateOrder(order:CreateOrderInput): Promise<OrderDoc> {
+    const food = await this.vendorExistWithFoods(order.vendorId);
+    const price = await this.calcFoodPrice(order.items, food);
     const expiry = new Date(new Date().getTime() + 60 * 1000); // 1 min later
     const createdOrder = await Order.create({
       userId: order.userId,
-      vendorId: order.restaurantId,
+      vendorId: order.vendorId,
       totalAmount: price,
       orderStatus: "Created",
-      items: order.foods,
+      items: order.items,
       expiresAT: expiry,
     });
     if (!createdOrder)
@@ -64,12 +63,15 @@ export class CustomerOrder extends Customercart {
     return createdOrder;
   }
 
-  static async cancelOrder(orderId: string):Promise<OrderDoc>{
-    this.validId(orderId);   
-    const order= await Order.findByIdAndUpdate({_id:orderId},{orderStatus:"Canceled", cancelledAt:new Date()});  
-    if(!order){
-      throw new Error("Something went Wrong while canceling the order"); 
-    } 
+  static async cancelOrder(orderId: string): Promise<OrderDoc> {
+    this.validId(orderId);
+    const order = await Order.findByIdAndUpdate(
+      { _id: orderId },
+      { orderStatus: "Canceled", cancelledAt: new Date() }
+    );
+    if (!order) {
+      throw new Error("Something went Wrong while canceling the order");
+    }
 
     return order;
   }

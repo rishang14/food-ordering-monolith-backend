@@ -1,21 +1,27 @@
-import type {  Request, Response } from "express";
+import type { Request, Response } from "express";
 import {
   addtoCartSchema,
   CreateCustomerSchema,
   editCustomerInputs,
 } from "../dto/Customer.dto.js";
-import z from "zod";
-import { Customer } from "../models/Customer.models.ts";
+import z, { success } from "zod";
+import { Customer } from "../models/index.ts";
 import {
   checkotpExpiry,
   generateOtpAndExpiry,
   GenrateToken,
   HashPassword,
   isPassEqual,
-} from "../utility/index.js";
-import { addjob } from "../queue/email.producer.js";
-import { LoginSchema } from "../dto/Vendor.dto.ts";
+} from "../utility/index.ts";
+import { addjob } from "../queue/email.producer.ts";
 import { Customercart } from "../services/Cart.service.ts";
+import {
+  CreateOrderItemSchema,
+  CreateOrderSchema,
+  LoginSchema,
+} from "../dto/index.ts";
+import { error } from "console";
+import { CustomerOrder } from "../services/Customer.order.ts";
 
 export const CreateCustomer = async (req: Request, res: Response) => {
   try {
@@ -329,6 +335,45 @@ export const emptyCart = async (req: Request, res: Response) => {
 
     return res
       .json({ success: false, error: error.message || "Intenal Server Error" })
+      .status(500);
+  }
+};
+
+export const createOrder = async (req: Request, res: Response) => {
+  try {
+    const validate = CreateOrderSchema.safeParse(req.body);
+
+    if (!validate.success) {
+      return res
+        .json({
+          success: false,
+          error: "Invalid Inputs",
+          cause: z.treeifyError(validate.error),
+        })
+        .status(400);
+    }
+
+    const user = req.user;
+
+    if (validate.data.userId !== user?._id) {
+      return res
+        .json({ success: false, error: "Pls provide valid id of the user" })
+        .status(401);
+    }
+
+    const order = await CustomerOrder.generateOrder(validate.data);
+
+    return res
+      .json({
+        success: true,
+        message: "Order Created Successfully wait for restaurant to accept",
+        data: order,
+      })
+      .status(201);
+  } catch (error: any) {
+    console.log("Error while creating the order");
+    return res
+      .json({ success: false, error: error.message || "Internal Server Error" })
       .status(500);
   }
 };
