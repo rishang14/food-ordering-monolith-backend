@@ -40,7 +40,7 @@ const OrderSchema = new Schema(
       },
     ],
     totalAmount: { type: Number, require: true },
-    paidAmount: { type: Number, },
+    paidAmount: { type: Number },
     orderDate: { type: Date },
     orderStatus: {
       type: String,
@@ -61,7 +61,7 @@ const OrderSchema = new Schema(
     expiresAt: { type: Date },
     bullJobId: { type: String, select: false },
 
-    chatId: { type: String },
+    chatId: { type: String, select: false },
 
     version: { type: Number, default: 1, select: false },
 
@@ -69,9 +69,10 @@ const OrderSchema = new Schema(
     rejectedAt: { type: Date },
     cancelledAt: { type: Date },
     completedAt: { type: Date },
-  },
+  }, 
   {
-    timestamps: true,
+    timestamps: true, 
+    select:false
   }
 );
 

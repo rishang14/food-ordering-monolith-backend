@@ -1,4 +1,3 @@
-import type { any } from "zod";
 import type { CreateOrderInput } from "../dto/Order.dto.ts";
 import {
   Vendor,
@@ -61,35 +60,36 @@ export class CustomerOrder extends Customercart {
     return foods;
   }
 
-  static async generateOrder(order: CreateOrderInput) {
+  static async generateOrder(order: CreateOrderInput):Promise<OrderDoc> {
     const food = await this.getAndCheckFoodValid(order.items);
     const price = await this.calcFoodPrice(food, order.items);
     const expiry = new Date(new Date().getTime() + 60 * 1000); // 1 min later
-    // const createdOrder = await Order.create({
-    //   userId: order.userId,
-    //   vendorId:,
-    //   totalAmount: price,
-    //   orderStatus: "Created",
-    //   items: order.items,
-    //   expiresAT: expiry,
-    // });
-    // if (!createdOrder)
-    //   throw new Error("Something went wrong while Creating the order");
+    const vendorId = food[0]?.vendorId;
+    const createdOrder = await Order.create({
+      userId: order.userId,
+      vendorId: vendorId,
+      totalAmount: price,
+      orderStatus: "Created",
+      items: order.items,
+      expiresAT: expiry,
+    });
+    if (!createdOrder)
+      throw new Error("Something went wrong while Creating the order");
 
-    // await Customer.findOneAndUpdate(
-    //   {
-    //     _id: order.userId,
-    //   },
-    //   { $push: { orders: createdOrder._id } }
-    // );
+    await Customer.findOneAndUpdate(
+      {
+        _id: order.userId,
+      },
+      { $push: { orders: createdOrder._id } }
+    );
 
-    // await Vendor.findOneAndUpdate(
-    //   {
-    //     _id: order.vendorId,
-    //   },
-    //   { $push: { orders: createdOrder._id } }
-    // );
-    // return createdOrder;
+    await Vendor.findOneAndUpdate(
+      {
+        _id: vendorId,
+      },
+      { $push: { orders: createdOrder._id } }
+    );
+    return createdOrder;
   }
 
   static async cancelOrder(orderId: string): Promise<OrderDoc> {

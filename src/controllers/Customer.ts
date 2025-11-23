@@ -5,7 +5,7 @@ import {
   editCustomerInputs,
 } from "../dto/Customer.dto.js";
 import z from "zod";
-import { Customer } from "../models/index.ts";
+import { Customer, type OrderDoc } from "../models/index.ts";
 import {
   checkotpExpiry,
   generateOtpAndExpiry,
@@ -13,12 +13,10 @@ import {
   HashPassword,
   isPassEqual,
 } from "../utility/index.ts";
-import { addjob } from "../queue/email.producer.ts";
+import { addEmailJob } from "../queue/email.producer.ts";
+import { addOrderjob } from "../queue/order.producer.ts";
 import { Customercart } from "../services/Cart.service.ts";
-import {
-  CreateOrderSchema,
-  LoginSchema,
-} from "../dto/index.ts";
+import { CreateOrderSchema, LoginSchema } from "../dto/index.ts";
 import { CustomerOrder } from "../services/Customer.order.ts";
 
 export const createCustomer = async (req: Request, res: Response) => {
@@ -65,7 +63,7 @@ export const createCustomer = async (req: Request, res: Response) => {
     console.log(otp, "otp");
     console.log(expiry, "expiry");
     console.log(haspass, "hashedpass");
-    await addjob({
+    await addEmailJob({
       type: "sendOtpMail",
       param: { otp, name: data.name, email: data.email },
     });
@@ -236,7 +234,6 @@ export const updateCustomerProfile = async (req: Request, res: Response) => {
         .status(400);
     }
     const user = req.user;
- 
 
     //todo  remove password from here password can't be updated from here
     const updatedUser = await Customer.findByIdAndUpdate(
@@ -244,9 +241,13 @@ export const updateCustomerProfile = async (req: Request, res: Response) => {
       { $set: validate.data },
       { new: true }
     );
-    console.log("updated user",updatedUser)
+    console.log("updated user", updatedUser);
     return res
-      .json({ success: true, message: "User Updated Successfully",data:updatedUser })
+      .json({
+        success: true,
+        message: "User Updated Successfully",
+        data: updatedUser,
+      })
       .status(200);
   } catch (error) {
     console.log("Error while updating the user", error);
@@ -328,9 +329,10 @@ export const emptyUserCart = async (req: Request, res: Response) => {
   try {
     const user = req.user;
 
-    console.log("i am trigerred")
+    console.log("i am trigerred");
     const cart = await Customercart.clearCart({ userId: user?._id as string });
-    return res.json({ success: true, message: "Cart is empty now" })
+    return res
+      .json({ success: true, message: "Cart is empty now" })
       .status(200);
   } catch (error: any) {
     console.log("Error while claering the cart");
@@ -363,13 +365,29 @@ export const createOrder = async (req: Request, res: Response) => {
         .status(401);
     }
 
-    const order = await CustomerOrder.generateOrder(validate.data);
+    const order: any = await CustomerOrder.generateOrder(validate.data);
 
+    const details = {
+      items: order.items,
+      price: order.totalAmount,
+      orderStatus: order.orderStatus,
+      vendorId: order.vendorId,
+      createdAt: order.cancelledAt,
+    };
+
+    await addOrderjob({
+      type: "authoCancelOrder",
+      param: {
+        vendorId: order.vendorId,
+        userId: user._id,
+        orderId: order?._id.toString() as string,
+      },
+    });
     return res
       .json({
         success: true,
         message: "Order Created Successfully wait for restaurant to accept",
-        data: order,
+        data: details,
       })
       .status(201);
   } catch (error: any) {
