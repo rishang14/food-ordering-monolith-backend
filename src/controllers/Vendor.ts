@@ -5,9 +5,11 @@ import {
   vendorInputs,
   VendorServiceInputs,
 } from "../dto/Vendor.dto.js";
-import { Vendor, Foods } from "../models/index.js";
+import { Vendor, Foods, Order } from "../models/index.js";
 import { GenrateToken, isPassEqual } from "../utility/index.js";
 import z from "zod";
+import { Types } from "mongoose";
+import { remvoeOrderJob } from "../queue/order.producer.ts";
 
 export const vendorLogin = async (
   req: Request,
@@ -47,9 +49,8 @@ export const vendorLogin = async (
       name: vendor.name,
     });
 
-    console.log(token, "token is generated");
     res.cookie("token", token, {
-      maxAge: 60*60*1000,
+      maxAge: 60 * 60 * 1000,
       httpOnly: true,
       secure: true,
     });
@@ -105,7 +106,7 @@ export const updateProfile = async (
     }
 
     const user = req.user;
-   //todo  remove password from here password can't be updated from here
+    //todo  remove password from here password can't be updated from here
     const vendorProfile = await Vendor.findByIdAndUpdate(
       user?._id,
       {
@@ -207,17 +208,101 @@ export const getFoods = async (
   res: Response,
   next: NextFunction
 ) => {
-  try  { 
-  const user= req.user; 
-  const foods:any=await Vendor.findById(user?._id).populate("foods").lean();  
-  console.log("foods",foods)
-  return res.json({success:true,message:"ALL foods of vender ",data:foods?.foods}).status(200)
-   } catch (error) {
+  try {
+    const user = req.user;
+    const foods: any = await Vendor.findById(user?._id)
+      .populate("foods")
+      .lean();
+    console.log("foods", foods);
+    return res
+      .json({
+        success: true,
+        message: "ALL foods of vender ",
+        data: foods?.foods,
+      })
+      .status(200);
+  } catch (error) {
     console.log("Error while getting all the food ", error);
     return res
       .json({ success: false, error: "Internal Server Error" })
       .status(500);
   }
-};    
+};
 
+export const acceptOrder = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId || !Types.ObjectId.isValid(orderId)) {
+      return res.json({ success: false, error: "Invalid Inputs" }).status(401);
+    }
+    const user = req.user;
+    const orderExist = await Order.findOne({
+      _id: orderId,
+      vendorId: user?._id,
+      orderStatus: "Created",
+    });
+    if (!orderExist) {
+      return res.json({
+        success: false,
+        error: "Order not exist with this id or already completed",
+      });
+    }
 
+    orderExist.orderStatus = "Accepted";
+    await orderExist.save();
+
+    //todooss create the chatid and then send it via sockets
+    return res
+      .json({
+        success: true,
+        message: "Order Accepted Successfully",
+        data: orderExist.items,
+      })
+      .status(200);
+  } catch (error) {
+    console.log("Something went wrong while accepting the order", error);
+    return res
+      .json({ success: false, error: "Internal Server Error" })
+      .status(500);
+  }
+};
+
+export const rejectOrder = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId || !Types.ObjectId.isValid(orderId)) {
+      return res.json({ success: false, error: "Invalid Inputs" }).status(401);
+    }
+    const user = req.user;
+    const orderExist = await Order.findOne({
+      _id: orderId,
+      vendorId: user?._id,
+      orderStatus: "Created",
+    });
+
+    if (!orderExist) {
+      return res.json({
+        success: false,
+        error: "Order not exist with this id or already completed",
+      });
+    }
+
+    orderExist.orderStatus = "Rejected";
+    await remvoeOrderJob(orderExist.bullJobId as string);
+    await orderExist.save();
+    //todos send it via socket and notify the user
+
+    return res
+      .json({
+        success: true,
+        message: "Order rejected Successfully",
+        data: orderExist.items,
+      })
+      .status(200);
+  } catch (error) {
+    console.log("Error while rejecting the order", error);
+    return res
+      .json({ success: false, error: "Internal Server Error" })
+      .status(500);
+  }
+};

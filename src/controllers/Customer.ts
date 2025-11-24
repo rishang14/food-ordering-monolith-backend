@@ -5,7 +5,7 @@ import {
   editCustomerInputs,
 } from "../dto/Customer.dto.js";
 import z from "zod";
-import { Customer, type OrderDoc } from "../models/index.ts";
+import { Customer, Order, type OrderDoc } from "../models/index.ts";
 import {
   checkotpExpiry,
   generateOtpAndExpiry,
@@ -18,6 +18,7 @@ import { addOrderjob } from "../queue/order.producer.ts";
 import { Customercart } from "../services/Cart.service.ts";
 import { CreateOrderSchema, LoginSchema } from "../dto/index.ts";
 import { CustomerOrder } from "../services/Customer.order.ts";
+import type { Job } from "bullmq";
 
 export const createCustomer = async (req: Request, res: Response) => {
   try {
@@ -375,14 +376,18 @@ export const createOrder = async (req: Request, res: Response) => {
       createdAt: order.cancelledAt,
     };
 
-    await addOrderjob({
+  const job= await addOrderjob({
       type: "authoCancelOrder",
       param: {
         vendorId: order.vendorId,
         userId: user._id,
         orderId: order?._id.toString() as string,
       },
-    });
+    });  
+
+      await Order.findByIdAndUpdate(order._id,{
+        bullJobId:job.id
+      })
     return res
       .json({
         success: true,

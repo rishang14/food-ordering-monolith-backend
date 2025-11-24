@@ -1,13 +1,13 @@
-import type { CreateOrderInput } from "../dto/Order.dto.ts";
+import type { CreateOrderInput } from "../dto/index.ts";
 import {
   Vendor,
-  type VendorDoc,
   Order,
   type OrderDoc,
   type FoodsType,
   Customer,
   Foods,
 } from "../models/index.ts";
+import { remvoeOrderJob } from "../queue/order.producer.ts";
 import { Customercart } from "./Cart.service.ts";
 
 export interface foodItems {
@@ -60,10 +60,10 @@ export class CustomerOrder extends Customercart {
     return foods;
   }
 
-  static async generateOrder(order: CreateOrderInput):Promise<OrderDoc> {
+  static async generateOrder(order: CreateOrderInput): Promise<OrderDoc> {
     const food = await this.getAndCheckFoodValid(order.items);
     const price = await this.calcFoodPrice(food, order.items);
-    const expiry = new Date(new Date().getTime() + 60 * 1000); // 1 min later
+    const expiry = new Date(new Date().getTime() + 60000); // 1 min later
     const vendorId = food[0]?.vendorId;
     const createdOrder = await Order.create({
       userId: order.userId,
@@ -103,5 +103,10 @@ export class CustomerOrder extends Customercart {
     }
 
     return order;
+  }
+
+  static async cancelJob(jobId: string, orderId: string) {
+    await Order.findByIdAndUpdate({ _id: orderId }, { bullJobId:null,expiresAT:null });
+    await remvoeOrderJob(jobId);
   }
 }
