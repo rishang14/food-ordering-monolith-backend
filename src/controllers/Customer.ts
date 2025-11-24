@@ -15,9 +15,9 @@ import {
 } from "../utility/index.ts";
 import { addEmailJob } from "../queue/email.producer.ts";
 import { addOrderjob } from "../queue/order.producer.ts";
-import { Customercart } from "../services/Cart.service.ts";
+import { Customercart } from "../services/user/Cart.service.ts";
 import { CreateOrderSchema, LoginSchema } from "../dto/index.ts";
-import { CustomerOrder } from "../services/Customer.order.ts";
+import { CustomerOrder } from "../services/user/Customer.order.ts";
 import type { Job } from "bullmq";
 
 export const createCustomer = async (req: Request, res: Response) => {
@@ -387,7 +387,11 @@ export const createOrder = async (req: Request, res: Response) => {
 
       await Order.findByIdAndUpdate(order._id,{
         bullJobId:job.id
-      })
+      })   
+  
+
+// todo notify the vendor imppediaterly  
+
     return res
       .json({
         success: true,

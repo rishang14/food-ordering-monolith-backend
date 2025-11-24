@@ -4,9 +4,9 @@ import {
   LoginSchema,
   vendorInputs,
   VendorServiceInputs,
-} from "../dto/Vendor.dto.js";
-import { Vendor, Foods, Order } from "../models/index.js";
-import { GenrateToken, isPassEqual } from "../utility/index.js";
+} from "../dto/index.ts";
+import { Vendor, Foods, Order } from "../models/index.ts";
+import { GenrateToken, isPassEqual } from "../utility/index.ts";
 import z from "zod";
 import { Types } from "mongoose";
 import { remvoeOrderJob } from "../queue/order.producer.ts";
@@ -180,11 +180,7 @@ export const addFoods = async (
         })
         .status(400);
     }
-
-    const { foods } = validate.data;
-
-    //Todo uplaod all the foods img in supabase and then get the string and put all the string in the food and then save it in db
-
+    const { foods } = validate.data; 
     const user = req.user;
     const prepareFood = foods.map((food) => ({
       ...food,

@@ -1,4 +1,4 @@
-import type { CreateOrderInput } from "../dto/index.ts";
+import type { CreateOrderInput } from "../../dto/index.ts";
 import {
   Vendor,
   Order,
@@ -6,8 +6,8 @@ import {
   type FoodsType,
   Customer,
   Foods,
-} from "../models/index.ts";
-import { remvoeOrderJob } from "../queue/order.producer.ts";
+} from "../../models/index.ts";
+import { remvoeOrderJob } from "../../queue/order.producer.ts";
 import { Customercart } from "./Cart.service.ts";
 
 export interface foodItems {

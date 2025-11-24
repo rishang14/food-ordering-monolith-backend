@@ -1,12 +1,12 @@
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import { ConnectDb } from "./services/db.js";
-import { AdminRoutes, CustomerRoutes,VendorRoutes } from "./routes/index.js"; 
+import { ConnectDb } from "./services/db.ts";
+import { AdminRoutes, CustomerRoutes,VendorRoutes } from "./routes/index.ts"; 
 import type { Request,Response,NextFunction } from "express"; 
 import rateLimit from "express-rate-limit"
 import http from "http";   
-import { RealTime } from "./services/Ws.main.ts";
+import { RealTime } from "./services/ws/Ws.main.ts";
 
 dotenv.config();
 
@@ -45,8 +45,6 @@ app.use("/", (req, res) => {
   res.status(200).send("Server is running");
 });
   
-
-
 
 const server=http.createServer(app); 
 export const ws=new RealTime(server)   
