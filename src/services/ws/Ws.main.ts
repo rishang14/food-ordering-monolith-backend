@@ -15,14 +15,17 @@ export class RealTime {
     this.wss.on("connection", (socket) => {
       socket.on("message", (data) => {
         const msg = JSON.parse(data.toString());
+        console.log("Connection message", msg);
         this.handlers(socket, msg);
       });
-    });
 
+      socket.on("close", (data) => {
+       
+      });
+    });
     this.wss.on("headers", (headers) => {
       headers.push("Access-Control-Allow-Origin: *");
     });
-
     this.wss.on("error", () => {});
   }
 
@@ -31,14 +34,22 @@ export class RealTime {
     console.log("message", msg);
 
     switch (msg.type) {
-      case "join-user":
-        console.log("UserId", msg.userId);
+      case "joinUser":
+        this.room.joinRoom(`userId:${msg.userId}`, socket);
         break;
-      case "join-vendor":
-        console.log("Vendor id", msg.vendorId);
+      case "joinVendor":
+        this.room.joinRoom(`vendorId:${msg.vendorId}`, socket);
         break;
       default:
         break;
     }
+  }
+
+  public sendToUser(userId: string, message: any) {
+    this.room.broadCastInRoom(`userId:${userId}`, message);
+  }
+
+  public sendToVendor(vendorId: string, message: any) {
+    this.room.broadCastInRoom(`vendorId:${vendorId}`, message);
   }
 }

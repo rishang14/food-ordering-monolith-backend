@@ -10,6 +10,7 @@ import { GenrateToken, isPassEqual } from "../utility/index.ts";
 import z from "zod";
 import { Types } from "mongoose";
 import { remvoeOrderJob } from "../queue/order.producer.ts";
+import { ws } from "../index.ts";
 
 export const vendorLogin = async (
   req: Request,
@@ -286,8 +287,14 @@ export const rejectOrder = async (req: Request, res: Response) => {
     orderExist.orderStatus = "Rejected";
     await remvoeOrderJob(orderExist.bullJobId as string);
     await orderExist.save();
-    //todos send it via socket and notify the user
-
+    //todos send it via socket and notify the user 
+    const orderDetails={
+      orderId:orderExist._id, 
+      name:user?.name,
+      orderStaus:orderExist.orderStatus,
+      price:orderExist.totalAmount
+    }
+    ws.sendToUser(orderExist.userId,orderDetails)
     return res
       .json({
         success: true,

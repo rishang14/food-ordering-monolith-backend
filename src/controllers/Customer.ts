@@ -19,6 +19,7 @@ import { Customercart } from "../services/user/Cart.service.ts";
 import { CreateOrderSchema, LoginSchema } from "../dto/index.ts";
 import { CustomerOrder } from "../services/user/Customer.order.ts";
 import type { Job } from "bullmq";
+import { ws } from "../index.ts";
 
 export const createCustomer = async (req: Request, res: Response) => {
   try {
@@ -368,35 +369,42 @@ export const createOrder = async (req: Request, res: Response) => {
 
     const order: any = await CustomerOrder.generateOrder(validate.data);
 
-    const details = {
+    const userOrderdetails = {
       items: order.items,
       price: order.totalAmount,
       orderStatus: order.orderStatus,
       vendorId: order.vendorId,
       createdAt: order.cancelledAt,
     };
+    
+    const vendorOrderDetail={
+      item:order.item,
+      price:order.totalAmount,
+      user:user.name 
+    }
 
-  const job= await addOrderjob({
+
+    const job = await addOrderjob({
       type: "authoCancelOrder",
       param: {
         vendorId: order.vendorId,
         userId: user._id,
         orderId: order?._id.toString() as string,
       },
-    });  
+    });
 
-      await Order.findByIdAndUpdate(order._id,{
-        bullJobId:job.id
-      })   
-  
+    await Order.findByIdAndUpdate(order._id, {
+      bullJobId: job.id,
+    });
 
-// todo notify the vendor imppediaterly  
+    // todo notify the vendor imppediaterly
+    ws.sendToVendor(order.vendorId,vendorOrderDetail);
 
     return res
       .json({
         success: true,
         message: "Order Created Successfully wait for restaurant to accept",
-        data: details,
+        data: userOrderdetails,
       })
       .status(201);
   } catch (error: any) {

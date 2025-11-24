@@ -8,7 +8,7 @@ export class RoomManager {
       this.rooms.set(roomid, new Set());
     }
     this.rooms.get(roomid)?.add(socket);
-    console.log("Currently in room ", this.rooms.get(roomid));
+    console.log("Currently in room ",this.rooms.size);
   }
  
   //send everyone the message available in the room
@@ -21,7 +21,8 @@ export class RoomManager {
 
     clients.forEach((socket) => {
       try {
-        socket.send(data);
+        socket.send(data); 
+        console.log("hello i got the dataa",)
       } catch (error) {
         console.log(`Ws error`, error);
       }
