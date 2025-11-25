@@ -355,15 +355,18 @@ export const createOrder = async (req: Request, res: Response) => {
     const userOrderdetails = {
       items: order.items,
       price: order.totalAmount,
-      orderStatus: order.orderStatus,
+      orderStatus: order.orderStatus, 
+      orderId:order._id,
       vendorId: order.vendorId,
-      createdAt: order.cancelledAt,
+      createdAt: order.createdAt,
     };
     
     const vendorOrderDetail={
       item:order.item,
-      price:order.totalAmount,
-      user:user.name 
+      price:order.totalAmount, 
+      orderStatus:order.orderStatus,
+      user:user.name,  
+      orderId:order._id
     }
 
 

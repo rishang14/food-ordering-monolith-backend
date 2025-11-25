@@ -211,7 +211,6 @@ export const acceptOrder = async (req: Request, res: Response) => {
     const user = req.user;
     const orderExist = await Order.findOne({
       _id: orderId,
-      vendorId: user?._id,
       orderStatus: "Created",
     });
     if (!orderExist) {
@@ -224,7 +223,10 @@ export const acceptOrder = async (req: Request, res: Response) => {
     orderExist.orderStatus = "Accepted";
     orderExist.chatId = orderExist?._id as string;
     await orderExist.save();
-    //todooss create the chatid and then send it via sockets
+    //todooss create the chatid and then send it via sockets   
+     await remvoeOrderJob(orderExist.bullJobId as string);  
+     ws.sendToUser(orderExist.userId,{orderId:orderExist._id,orderStatus:orderExist.orderStatus});
+
     return res
       .json({
         success: true,
@@ -247,7 +249,6 @@ export const rejectOrder = async (req: Request, res: Response) => {
     const user = req.user;
     const orderExist = await Order.findOne({
       _id: orderId,
-      vendorId: user?._id,
       orderStatus: "Created",
     });
 

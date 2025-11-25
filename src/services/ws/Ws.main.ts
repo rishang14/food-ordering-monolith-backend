@@ -67,11 +67,13 @@ export class RealTime {
     }
   }
 
-  public sendToUser(userId: string, message: any) {
+  public sendToUser(userId: string, message: any) { 
+    console.log("send to user")
     this.room.broadCastInRoom(`user:${userId}`, message);
   }
 
-  public sendToVendor(vendorId: string, message: any) {
+  public sendToVendor(vendorId: string, message: any) { 
+    console.log("send to vendor")
     this.room.broadCastInRoom(`vendor:${vendorId}`, message);
   }
 

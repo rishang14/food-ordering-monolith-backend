@@ -6,8 +6,10 @@ import {
   updateService,
   addFoods,
   getFoods,
-} from "../controllers/index.js";
-import { Auth } from "../middleware/Auth.js";
+  acceptOrder,
+  rejectOrder,
+} from "../controllers/index.ts";
+import { Auth } from "../middleware/Auth.ts";
 
 const router = express.Router();
 
@@ -19,6 +21,7 @@ router.patch("/profile", updateProfile);
 router.put("/update-service", updateService);
 router.post("/addfoods", addFoods);
 router.get("/getfoods", getFoods);
-
+router.put("/acceptorder/:orderId",acceptOrder);
+router.put("/rejectorder/:orderId",rejectOrder)
 
 export { router as VendorRoutes };

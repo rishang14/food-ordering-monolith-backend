@@ -4,7 +4,7 @@ import { Vendor } from "../models/Vendor.models.js";
 import { HashPassword } from "../utility/index.js";
 import { ApiError } from "../utility/apiError.ts";
 import z from "zod";
-import { ApiResponse } from "../utility/apiresponse.ts";
+import { ApiResponse } from "../utility/apiResponse.ts";
 
 export const CreateVendor = async (
   req: Request,
