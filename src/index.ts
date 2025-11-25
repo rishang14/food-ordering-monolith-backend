@@ -7,6 +7,7 @@ import type { Request,Response,NextFunction } from "express";
 import rateLimit from "express-rate-limit"
 import http from "http";   
 import { RealTime } from "./services/ws/Ws.main.ts";
+import { redisIntance } from "./services/redis.client.ts";
 
 dotenv.config();
 
@@ -29,11 +30,11 @@ const limiter = rateLimit({
 })
 
 try {
-  await ConnectDb();
-  console.log(" Database connected successfully");
+  await ConnectDb(); 
+  await redisIntance.connect();
 } catch (error:any) {
-  console.error(" Database connection failed:", error.message);
-  process.exit(1); // Exit if DB fails
+  console.error(" Database or Redis connection failed:", error.message);
+  process.exit(1); // Exit if DB or Redis fails
 }
 
 app.use(limiter);

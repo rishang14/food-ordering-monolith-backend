@@ -1,5 +1,5 @@
 import { Worker, Job } from "bullmq";
-import { redisConfig } from "./redis.config.ts";
+import { redisConfig } from "../utility/redis.config.ts";
 import { Order } from "../models/index.ts";
 
 const worker = new Worker(
