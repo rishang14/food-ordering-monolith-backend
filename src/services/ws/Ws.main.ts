@@ -75,7 +75,7 @@ export class RealTime {
     this.room.broadCastInRoom(`vendor:${vendorId}`, message);
   }
 
-  public async removeFromTheRoom(chatId: string) {
+  public async clearChatRoom(chatId: string) {
     this.room.claerChat(`chat:${chatId}`);
     await this.chat.deleteChat(`chat:${chatId}`);
   }

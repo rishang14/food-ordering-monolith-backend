@@ -6,33 +6,29 @@ export const createvendor = z.object({
   foodType: z.array(z.string()).optional(),
   ownername: z.string().min(1, "ownername is required"),
   email: z.email("invalid email"),
-  phone: z.string().min(7, "phone is too short").max(15, "phone is too long"), 
-  password:z.string().min(7,"password must be 7 letter"), 
-  pincode:z.number().min(4,"pincode must be 4 number")
+  phone: z.string().min(7, "phone is too short").max(15, "phone is too long"),
+  password: z.string().min(7, "password must be 7 letter"),
+  pincode: z.number().min(4, "pincode must be 4 number"),
 });
 
+export const LoginSchema = z.object({
+  email: z.email("email is required"),
+  password: z.string().min(7, "password must be 7 letter"),
+});
 
+export const vendorInputs = createvendor.partial();
 
-
-export const LoginSchema= z.object({
-    email:z.email("email is required"),
-    password:z.string().min(7,"password must be 7 letter")
-})
-
-export const vendorInputs= createvendor.partial();  
-
-
-export const VendorServiceInputs=z.object({
-  serviceAvailable:z.boolean()
-})  
+export const VendorServiceInputs = z.object({
+  serviceAvailable: z.boolean(),
+});
 
 export const FoodInput = z.object({
   foods: z.array(
     z.object({
       name: z.string().min(1, "Name is required"),
       description: z.string().min(1, "Description is required"),
-      category: z.enum(["Veg", "Non-Veg"],{
-        error:"Cateogry is requierd",
+      category: z.enum(["Veg", "Non-Veg"], {
+        error: "Cateogry is requierd",
       }),
       foodType: z.string().min(1, "Food type is required"),
       readyTime: z.number().optional(),
@@ -43,3 +39,13 @@ export const FoodInput = z.object({
   ),
 });
 
+export const orderStatusInputs = z.object({
+  orderStatus: z.enum([
+    "Created",
+    "Accepted",
+    "Canceled",
+    "Rejected",
+    "Preparing",
+    "Completed",
+  ]),
+});

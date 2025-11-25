@@ -2,15 +2,17 @@ import type { Request, Response, NextFunction } from "express";
 import {
   FoodInput,
   LoginSchema,
+  orderStatusInputs,
   vendorInputs,
   VendorServiceInputs,
 } from "../dto/index.ts";
 import { Vendor, Foods, Order } from "../models/index.ts";
 import { GenrateToken, isPassEqual } from "../utility/index.ts";
-import z from "zod";
+import z  from "zod";
 import { Types } from "mongoose";
 import { remvoeOrderJob } from "../queue/order.producer.ts";
 import { ws } from "../index.ts";
+import { ApiError } from "../utility/apiError.ts";
 
 export const vendorLogin = async (
   req: Request,
@@ -20,9 +22,7 @@ export const vendorLogin = async (
   try {
     const validate = LoginSchema.safeParse(await req.body);
     if (!validate.success) {
-      return res
-        .json({ success: false, error: "Validation Error" })
-        .status(400);
+      throw new ApiError(400, "Invalid inputs", z.treeifyError(validate.error));
     }
     const { data } = validate;
     const vendor = await Vendor.findOne({ email: data.email }).select(
@@ -58,11 +58,9 @@ export const vendorLogin = async (
     return res
       .json({ success: true, message: "user signed in successfully" })
       .status(200);
-  } catch (error) {
+  } catch (error:any) {
     console.log("error while login vendor", error);
-    return res
-      .json({ error: "Internal Server Error ", success: false })
-      .status(500);
+   return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -81,10 +79,8 @@ export const getVendorProfile = async (
     return res
       .json({ success: true, message: "Vendor Profile", data: vendor })
       .status(200);
-  } catch (error) {
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+  } catch (error:any) {
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -97,13 +93,7 @@ export const updateProfile = async (
     const validate = vendorInputs.safeParse(req.body);
 
     if (!validate.success) {
-      return res
-        .json({
-          success: false,
-          error: "Invalid Credentials",
-          cause: z.treeifyError(validate.error).properties,
-        })
-        .status(400);
+     throw new ApiError(400, "Invalid inputs", z.treeifyError(validate.error));
     }
 
     const user = req.user;
@@ -123,11 +113,9 @@ export const updateProfile = async (
         data: vendorProfile,
       })
       .status(200);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error in update profile routes of vendor ", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -142,7 +130,7 @@ export const updateService = async (
     const validate = VendorServiceInputs.safeParse(req.body);
 
     if (!validate.success) {
-      return res.json({ success: false, error: "Invalid Inputs" }).status(400);
+      throw new ApiError(400, "Invalid inputs", z.treeifyError(validate.error));
     }
 
     const updatedService = await Vendor.findByIdAndUpdate(user?._id, {
@@ -156,11 +144,9 @@ export const updateService = async (
         data: updatedService,
       })
       .status(200);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error while updating the service ", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -173,15 +159,9 @@ export const addFoods = async (
     const validate = FoodInput.safeParse(req.body);
 
     if (!validate.success) {
-      return res
-        .json({
-          success: false,
-          error: "Invalid Inputs",
-          cause: z.treeifyError(validate.error),
-        })
-        .status(400);
+       throw new ApiError(400, "Invalid inputs", z.treeifyError(validate.error));
     }
-    const { foods } = validate.data; 
+    const { foods } = validate.data;
     const user = req.user;
     const prepareFood = foods.map((food) => ({
       ...food,
@@ -192,11 +172,9 @@ export const addFoods = async (
     return res
       .json({ success: true, message: "Food is added", data: newFoods })
       .status(201);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error while adding  the Food ", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -218,11 +196,9 @@ export const getFoods = async (
         data: foods?.foods,
       })
       .status(200);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error while getting all the food ", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -230,7 +206,7 @@ export const acceptOrder = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.params;
     if (!orderId || !Types.ObjectId.isValid(orderId)) {
-      return res.json({ success: false, error: "Invalid Inputs" }).status(401);
+       throw new ApiError(400, "Invalid inputs");
     }
     const user = req.user;
     const orderExist = await Order.findOne({
@@ -242,12 +218,12 @@ export const acceptOrder = async (req: Request, res: Response) => {
       return res.json({
         success: false,
         error: "Order not exist with this id or already completed",
-      });
+      }).status(404);
     }
 
     orderExist.orderStatus = "Accepted";
+    orderExist.chatId = orderExist?._id as string;
     await orderExist.save();
-
     //todooss create the chatid and then send it via sockets
     return res
       .json({
@@ -256,11 +232,9 @@ export const acceptOrder = async (req: Request, res: Response) => {
         data: orderExist.items,
       })
       .status(200);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Something went wrong while accepting the order", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -268,7 +242,7 @@ export const rejectOrder = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.params;
     if (!orderId || !Types.ObjectId.isValid(orderId)) {
-      return res.json({ success: false, error: "Invalid Inputs" }).status(401);
+      throw new ApiError(400, "Invalid inputs");
     }
     const user = req.user;
     const orderExist = await Order.findOne({
@@ -286,15 +260,20 @@ export const rejectOrder = async (req: Request, res: Response) => {
 
     orderExist.orderStatus = "Rejected";
     await remvoeOrderJob(orderExist.bullJobId as string);
-    await orderExist.save();
-    //todos send it via socket and notify the user 
-    const orderDetails={
-      orderId:orderExist._id, 
-      name:user?.name,
-      orderStaus:orderExist.orderStatus,
-      price:orderExist.totalAmount
+
+    if (orderExist.chatId) {
+      await ws.clearChatRoom(orderExist.chatId);
+      orderExist.chatId = null;
     }
-    ws.sendToUser(orderExist.userId,orderDetails)
+
+    await orderExist.save();
+    const orderDetails = {
+      orderId: orderExist._id,
+      name: user?.name,
+      orderStaus: orderExist.orderStatus,
+      price: orderExist.totalAmount,
+    };
+    ws.sendToUser(orderExist.userId, orderDetails);
     return res
       .json({
         success: true,
@@ -302,10 +281,51 @@ export const rejectOrder = async (req: Request, res: Response) => {
         data: orderExist.items,
       })
       .status(200);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error while rejecting the order", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
+  }
+};
+
+export const orderStatusTrack = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+
+    if (!orderId || !Types.ObjectId.isValid(orderId)) {
+      throw new ApiError(400, "Invalid inputs");
+    }
+
+    const validate = orderStatusInputs.safeParse(req.body);
+
+    if (!validate.success) {
+      return res
+        .json({
+          success: false,
+          error: "Invalid Inputs",
+          cause: z.treeifyError(validate.error),
+        })
+        .status(401);
+    }
+
+    const orderExist = await Order.findOne({
+      _id: orderId,
+      orderStatus: "Accepted",
+    });
+    if (!orderExist) {
+      return res.json({
+        success: false,
+        error: "Order not exist with this id or already completed",
+      });
+    }
+    orderExist.orderStatus = validate.data.orderStatus;
+    await orderExist.save();
+    const orderDetails = {
+      orderId: orderExist._id,
+      orderStaus: orderExist.orderStatus,
+    };
+    ws.sendToUser(orderExist.userId, orderDetails);   
+    return res.json({success:true,message:"Order status Updated"}).status(201);
+  } catch (error:any) {
+   return new ApiError(500,error.message, "Internal server Error ")
   }
 };

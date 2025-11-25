@@ -18,8 +18,8 @@ import { addOrderjob } from "../queue/order.producer.ts";
 import { Customercart } from "../services/user/Cart.service.ts";
 import { CreateOrderSchema, LoginSchema } from "../dto/index.ts";
 import { CustomerOrder } from "../services/user/Customer.order.ts";
-import type { Job } from "bullmq";
 import { ws } from "../index.ts";
+import { ApiError } from "../utility/apiError.ts";
 
 export const createCustomer = async (req: Request, res: Response) => {
   try {
@@ -77,11 +77,9 @@ export const createCustomer = async (req: Request, res: Response) => {
         data: user,
       })
       .status(201);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error while creating the customer", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -196,11 +194,9 @@ export const otpVerify = async (req: Request, res: Response) => {
     return res
       .json({ success: false, error: "Unauthenticated req" })
       .status(401);
-  } catch (error) {
+  } catch (error:any) {
     console.log("error while verifying otp", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -214,11 +210,9 @@ export const getCustomerProfile = async (req: Request, res: Response) => {
         .status(200);
     }
     return res.json({ success: false, error: "Nothing Found" }).status(404);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error while sending the data", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -251,11 +245,9 @@ export const updateCustomerProfile = async (req: Request, res: Response) => {
         data: updatedUser,
       })
       .status(200);
-  } catch (error) {
+  } catch (error:any) {
     console.log("Error while updating the user", error);
-    return res
-      .json({ success: false, error: "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -291,12 +283,7 @@ export const addFoodItemTocart = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log("Error while addig item to the cart", error);
 
-    return res
-      .json({
-        success: false,
-        error: error.message || "Internal Server Error",
-      })
-      .status(500);
+  return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -321,9 +308,7 @@ export const removeFromTheCart = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.log("error while updating the cart", error);
-    return res
-      .json({ success: false, error: error.message || "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -339,9 +324,7 @@ export const emptyUserCart = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.log("Error while claering the cart");
 
-    return res
-      .json({ success: false, error: error.message || "Intenal Server Error" })
-      .status(500);
+   return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -409,8 +392,6 @@ export const createOrder = async (req: Request, res: Response) => {
       .status(201);
   } catch (error: any) {
     console.log("Error while creating the order");
-    return res
-      .json({ success: false, error: error.message || "Internal Server Error" })
-      .status(500);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };

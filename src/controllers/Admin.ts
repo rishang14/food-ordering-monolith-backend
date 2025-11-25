@@ -2,7 +2,9 @@ import type { Request, Response, NextFunction } from "express";
 import { createvendor } from "../dto/Vendor.dto.js";
 import { Vendor } from "../models/Vendor.models.js";
 import { HashPassword } from "../utility/index.js";
-
+import { ApiError } from "../utility/apiError.ts";
+import z from "zod";
+import { ApiResponse } from "../utility/apiresponse.ts";
 
 export const CreateVendor = async (
   req: Request,
@@ -12,12 +14,12 @@ export const CreateVendor = async (
   try {
     const validate = createvendor.safeParse(await req.body);
     if (!validate.success) {
-      return res.send({ error: validate.error }).status(400);
+      throw new ApiError(400, "Invalid inputs", z.treeifyError(validate.error));
     }
-    const { data } = validate; 
-    const vendorExists=await Vendor.findOne({email:data.email}); 
-    if(vendorExists){
-        return res.json({success:false,error:"Vendor already exist with this email id "}).status(409)
+    const { data } = validate;
+    const vendorExists = await Vendor.findOne({ email: data.email });
+    if (vendorExists) {
+      throw new ApiError(409, "Vendor already exist with this email id ");
     }
     const hashPass = await HashPassword(data.password);
     const created = await Vendor.create({
@@ -29,16 +31,10 @@ export const CreateVendor = async (
       phone: data.phone,
       pincode: data.pincode,
     });
-     
-    return res.status(201).json({
-      success: true,
-      message: "Vendor created Successfully",
-      data: created,
-    });
-  } catch (error) {
-    return res
-      .json({ error: "Internal Server Error", success: false })
-      .status(500);
+
+    return new ApiResponse(201, created, "Vendor created Successfully");
+  } catch (error: any) {
+    return new ApiError(500, error.message || "Inernal Server Error");
   }
 };
 
@@ -50,14 +46,10 @@ export const GetallVendors = async (
   try {
     const allvendor = await Vendor.find();
 
-    return res
-      .json({ message: "All Vendors ", success: true, data: allvendor })
-      .status(200);
-  } catch (error) { 
-    console.log("error while getting all the vendors",error)
-    return res
-      .json({ error: "Internal server Error ", success: false })
-      .status(500);
+    return new ApiResponse(200, "All Vendors ");
+  } catch (error:any) {
+    console.log("error while getting all the vendors", error);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
 
@@ -67,21 +59,17 @@ export const GetVendorsById = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = await req.params;
+    const { id } =  req.params;
 
     const vendor = await Vendor.findById({ _id: id });
 
     if (!vendor) {
-      return res
-        .json({ success: false, error: "No vendor exist with this id " })
-        .status(404);
+      return new ApiError(404, "No vendor exist with this id ")
     }
 
-    return res
-      .json({ success: true, message: "Here is the vendor", data: vendor })
-      .status(200);
-  } catch (error) {
-  console.log("while getting the vendor by specific id ",error)
-  return res.json({error:"Internal Server Error"}).status(500);
+    return new ApiResponse(200,vendor,"Here is the vendor")
+  } catch (error:any) {
+    console.log("while getting the vendor by specific id ", error);
+    return new ApiError(500,error.message, "Internal server Error ")
   }
 };
