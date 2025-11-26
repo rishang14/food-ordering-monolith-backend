@@ -5,7 +5,7 @@ import {
   editCustomerInputs,
 } from "../dto/Customer.dto.js";
 import z from "zod";
-import { Customer, Order, type OrderDoc } from "../models/index.ts";
+import { Customer, Order, } from "../models/index.ts";
 import {
   checkotpExpiry,
   generateOtpAndExpiry,
@@ -13,8 +13,8 @@ import {
   HashPassword,
   isPassEqual,
 } from "../utility/index.ts";
-import { addEmailJob } from "../queue/email.producer.ts";
-import { addOrderjob } from "../queue/order.producer.ts";
+import { addEmailJob } from "../queue/email/email.producer.ts";
+import { addOrderjob } from "../queue/order/order.producer.ts";
 import { Customercart } from "../services/user/Cart.service.ts";
 import { CreateOrderSchema, LoginSchema } from "../dto/index.ts";
 import { CustomerOrder } from "../services/user/Customer.order.ts";
@@ -377,7 +377,7 @@ export const createOrder = async (req: Request, res: Response) => {
         userId: user._id,
         orderId: order?._id.toString() as string,
       },
-    });
+    });   
 
     await Order.findByIdAndUpdate(order._id, {
       bullJobId: job.id,
@@ -390,7 +390,8 @@ export const createOrder = async (req: Request, res: Response) => {
       .json({
         success: true,
         message: "Order Created Successfully wait for restaurant to accept",
-        data: userOrderdetails,
+        data: userOrderdetails, 
+        job:job
       })
       .status(201);
   } catch (error: any) {

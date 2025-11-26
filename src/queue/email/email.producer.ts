@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { redisConfig } from "../utility/redis.config.ts";
+import { redisConfig } from '../../utility/redis.config.ts';
 
 interface job {
   type: string;

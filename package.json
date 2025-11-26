@@ -7,7 +7,7 @@
     "dev": "tsx watch src/bin/index.ts",
     "build": "tsc",
     "start": "node dist/index.js", 
-    "orderworker":"tsx  watch  src/queue/order.worker.ts", 
+    "orderworker":"tsx  watch  src/queue/order/order.worker.ts", 
     "emailworker": "npx ts-node src/queue/email.worker.ts"
   },
   "dependencies": {

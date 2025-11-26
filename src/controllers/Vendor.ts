@@ -10,7 +10,7 @@ import { Vendor, Foods, Order } from "../models/index.ts";
 import { GenrateToken, isPassEqual } from "../utility/index.ts";
 import z  from "zod";
 import { Types } from "mongoose";
-import { remvoeOrderJob } from "../queue/order.producer.ts";
+import { remvoeOrderJob } from "../queue/order/order.producer.ts";
 import { ws } from "../index.ts";
 import { ApiError } from "../utility/apiError.ts";
 
@@ -212,7 +212,8 @@ export const acceptOrder = async (req: Request, res: Response) => {
     const orderExist = await Order.findOne({
       _id: orderId,
       orderStatus: "Created",
-    });
+    });  
+    console.log("order",orderExist)
     if (!orderExist) {
       return res.json({
         success: false,

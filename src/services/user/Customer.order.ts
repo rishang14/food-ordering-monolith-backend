@@ -7,7 +7,7 @@ import {
   Customer,
   Foods,
 } from "../../models/index.ts";
-import { remvoeOrderJob } from "../../queue/order.producer.ts";
+import { remvoeOrderJob } from "../../queue/order/order.producer.ts";
 import { Customercart } from "./Cart.service.ts";
 
 export interface foodItems {

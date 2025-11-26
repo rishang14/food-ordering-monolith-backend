@@ -7,7 +7,7 @@ import type { Request,Response,NextFunction } from "express";
 import rateLimit from "express-rate-limit"
 import http from "http";   
 import { redisIntance } from "./services/redis.client.ts";
-import { RealTime } from "./services/ws/Ws.main.ts";
+import { RealTime } from "./services/ws/Ws.main.ts"; 
 
 dotenv.config();
 

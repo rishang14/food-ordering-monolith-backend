@@ -1,6 +1,6 @@
 import { Worker,Job } from "bullmq"
-import { redisConfig } from "../utility/redis.config.ts";
-import { sendOtpEmail } from "../utility/email/email.helper.ts";
+import { redisConfig } from '../../utility/redis.config.ts';
+import { sendOtpEmail } from "../../utility/email/email.helper.ts";
 import dotenv from "dotenv" 
 
 
