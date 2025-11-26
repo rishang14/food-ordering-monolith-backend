@@ -3,7 +3,6 @@ import { redisConfig } from "../../utility/redis.config.ts";
 import { Order } from "../../models/Order.model.ts";
 import mongoose from "mongoose";
 import  dotenv  from "dotenv";
-import { ws } from "../../index.ts";
 
 dotenv.config();
 
@@ -17,8 +16,18 @@ const worker = new Worker(
       console.log("i got inside the if statement")
       order.orderStatus = "Canceled";
       await order.save();
-    }  
-    return order;
+    }    
+   
+    const returnOrderVal={
+      orderId:order?.id as string,
+      vendorId:order?.vendorId,
+      userId:order?.userId,
+      orderStatus:order?.orderStatus,
+      totalPrice:order?.totalAmount,
+      items:order?.items
+    }
+
+    return  returnOrderVal;
   },
   { connection: redisConfig }
 );
@@ -27,11 +36,8 @@ worker.on("error", (err) => {
   console.error(err);
 });
 
-worker.on('completed', (job:Job) => {
-  console.log(`✅ Job : ${job.returnvalue}`);    
-  console.log("job data", job.data)  
-  console.log("job completed")
-
+worker.on('completed', (job:Job) => { 
+  console.log("jobidInWORKER",job.id)
 });
 
 worker.on("failed", (job, err) => {    
