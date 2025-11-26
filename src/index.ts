@@ -6,12 +6,14 @@ import { AdminRoutes, CustomerRoutes,VendorRoutes } from "./routes/index.ts";
 import type { Request,Response,NextFunction } from "express"; 
 import rateLimit from "express-rate-limit"
 import http from "http";   
-import { RealTime } from "./services/ws/Ws.main.ts";
 import { redisIntance } from "./services/redis.client.ts";
+import { RealTime } from "./services/ws/Ws.main.ts";
 
 dotenv.config();
 
-export const app = express();
+export const app = express(); 
+export const server=http.createServer(app);  
+export const ws = new RealTime(server);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -47,14 +49,6 @@ app.use("/", (req, res) => {
 });
   
 
-const server=http.createServer(app); 
-export const ws=new RealTime(server)   
-server.listen(8001, () => {
-  console.log("Server running on port 8001");
-}); 
-
-
-
 
 app.use((err:any, req:Request, res:Response, next:NextFunction) => {
   console.error(" Global error caught:", err);
@@ -74,6 +68,3 @@ process.on("unhandledRejection", (reason) => {
   process.exit(1);
 });
 
-app.listen(8000, () => {
-  console.log(" Listening on port 8000");
-});

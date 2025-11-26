@@ -3,6 +3,7 @@ import { redisConfig } from "../utility/redis.config.ts";
 import { Order } from "../models/Order.model.ts";
 import mongoose from "mongoose";
 import  dotenv  from "dotenv";
+import { ws } from "../index.ts";
 
 dotenv.config();
 
@@ -16,8 +17,8 @@ const worker = new Worker(
     console.log("hello i am here")
     if (order?.orderStatus === "Created") {
       order.orderStatus = "Canceled";
-    //  ws.sendToUser(order.userId,{orderId:order._id,orderStatus:order.orderStatus});
-    //  ws.sendToVendor(order.vendorId,{orderId:order._id,orderStatus:order.orderStatus});
+     ws.sendToUser(order.userId,{orderId:order._id,orderStatus:order.orderStatus});
+     ws.sendToVendor(order.vendorId,{orderId:order._id,orderStatus:order.orderStatus});
       await order.save();
       //todo tell the user and vendor both via in real time that time limit exceeded order is auto cancel
     }

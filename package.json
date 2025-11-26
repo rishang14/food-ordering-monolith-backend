@@ -4,7 +4,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/bin/index.ts",
     "build": "tsc",
     "start": "node dist/index.js", 
     "orderworker":"tsx  watch  src/queue/order.worker.ts", 
