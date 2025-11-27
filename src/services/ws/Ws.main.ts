@@ -47,7 +47,7 @@ export class RealTime {
         break;
       case "joinChat":
         this.room.joinRoom(`chat:${msg.chatId}`, socket);
-        const data = await this.chat.getChatHistory(msg.chatId);
+        const history = await this.chat.getChatHistory(msg.chatId);
         socket.send(
           JSON.stringify({
             type: "chat.history",

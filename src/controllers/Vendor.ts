@@ -225,9 +225,9 @@ export const acceptOrder = async (req: Request, res: Response) => {
     orderExist.chatId = orderExist?._id as string;
     await orderExist.save();
     //todooss create the chatid and then send it via sockets   
-     await remvoeOrderJob(orderExist.bullJobId as string);  
-     ws.sendToUser(orderExist.userId,{orderId:orderExist._id,orderStatus:orderExist.orderStatus});
-
+      await remvoeOrderJob(orderExist.bullJobId as string);  
+     ws.sendToUser(orderExist.userId,{orderId:orderExist._id,orderStatus:orderExist.orderStatus,chatId:orderExist.chatId});
+   console.log(orderExist)
     return res
       .json({
         success: true,

@@ -16,7 +16,7 @@ export const autoOrderCancellationQueue = new Queue("autoOrderCancellationQueue"
 
 export async function addOrderjob(job: Orderdetails) { 
   console.log("added successfully")
-return  await autoOrderCancellationQueue.add(job.type,job.param,{delay:20*1000,removeOnComplete:true,removeOnFail:true});
+return  await autoOrderCancellationQueue.add(job.type,job.param,{delay:30*1000,removeOnComplete:true,removeOnFail:true});
 }
 
 
